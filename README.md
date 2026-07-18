@@ -2,7 +2,7 @@
 
 [![GitHub Badge](https://img.shields.io/badge/fork-DI%20compat%20build-black?logo=github)](https://github.com/kirballs/ctov-DI-compat)
 ![Environment](https://img.shields.io/badge/environment-server-orangered?style=flat-square)
-![MC Version](https://img.shields.io/badge/minecraft-1.21.1-blue?style=flat-square)
+![MC Version](https://img.shields.io/badge/minecraft-1.20.1-blue?style=flat-square)
 ![Loaders](https://img.shields.io/badge/loaders-fabric%20%7C%20forge%20%7C%20neoforge%20%7C%20quilt-blueviolet?style=flat-square)
 
 > **This is a fork** of [ChoiceTheorem's Overhauled Village](https://github.com/ChoiceTheorem/ChoiceTheorem-s-overhauled-village)
