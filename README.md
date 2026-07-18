@@ -45,7 +45,7 @@ naturally into your Minecraft worlds. The existing villages are rebuilt from the
 and each biome type can generate two types of structures. In total, there are 23 village
 variants and 14 pillager outpost variants tailored to suit the terrain, theme and biomes.
 
-The mod targets Minecraft 1.21.1.
+The mod targets Minecraft 1.20.1.
 
 <details><summary>FAQs</summary>
 
