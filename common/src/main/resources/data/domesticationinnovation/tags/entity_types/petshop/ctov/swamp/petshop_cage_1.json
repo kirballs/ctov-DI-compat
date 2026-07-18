@@ -1,0 +1,8 @@
+{
+	"replace": false,
+	"#comment": "CTOV petshop tag — variant=swamp (Swamp village variant), marker=petshop_cage_1. Desert terrarium — arid-biome mobs (DI: desert). Override this tag via datapack to customize. Falls back to the matching domesticationinnovation:petstore_* tag when this list is empty or removed.",
+	"values": [
+		"minecraft:frog",
+		"minecraft:rabbit"
+	]
+}

@@ -1,0 +1,7 @@
+{
+	"replace": false,
+	"#comment": "CTOV petshop tag — variant=beach (Beach village variant (tropical coast)), marker=petshop_cage_3. Tropical bird cage — parrot-style mobs (DI: jungle/savanna). Override this tag via datapack to customize. Falls back to the matching domesticationinnovation:petstore_* tag when this list is empty or removed.",
+	"values": [
+		"minecraft:parrot"
+	]
+}

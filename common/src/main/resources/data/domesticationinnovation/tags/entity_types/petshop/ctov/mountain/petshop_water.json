@@ -1,0 +1,8 @@
+{
+	"replace": false,
+	"#comment": "CTOV petshop tag — variant=mountain (Mountain village variant (temperate elevation)), marker=petshop_water. Fish tank — aquatic mobs for the petshop water feature. Override this tag via datapack to customize. Falls back to the matching domesticationinnovation:petstore_* tag when this list is empty or removed.",
+	"values": [
+		"minecraft:salmon",
+		"minecraft:cod"
+	]
+}
