@@ -60,20 +60,28 @@ import static net.choicetheorem.ctov.platform.CTOVConfigHelper.*;
  * auto-injects into the 5 vanilla village pools (plains/desert/savanna/snowy/taiga); CTOV's 16
  * non-vanilla biome variants would never receive petshop spawns through DI alone.</p>
  *
- * <p>This element mirrors DI's marker handling for every CTOV variant, with three layers of
- * entity resolution per (variant, marker):</p>
- * <ol>
- *   <li>CTOV semantic tag at {@code domesticationinnovation:petshop/ctov_<variant>/<marker>}
- *       — user-editable via standard datapack tooling in the DI namespace.</li>
- *   <li>Optional spawn profile JSON at {@code ctov:petshop_profiles/<variant>/<marker>.json}
- *       — supports per-entry {@code entity / weight / baby / age} (age may be negative,
- *       e.g. {@code -60000} for a permanent baby).</li>
- *   <li>DI fallback tag ({@code domesticationinnovation:petstore_cage_0..3 / petstore_fishtank})
- *       — DI-owned, never modified.</li>
- * </ol>
+ * <p>This element mirrors DI's marker handling for every CTOV variant, with a per-village tag
+ * resolution scheme:</p>
+ * <ul>
+ *   <li><b>Vanilla-aligned variants</b> (plains, plains_fortified, taiga, taiga_fortified,
+ *       halloween, desert, desert_oasis, snowy_igloo, christmas, savanna, savanna_na) use DI's
+ *       original numbered tags {@code petstore_cage_0..3}. All cage markers in a given variant
+ *       use the SAME tag (e.g. plains → all cages use {@code petstore_cage_0}). This differs
+ *       from DI's per-marker behavior but matches the per-village theming the user requested.</li>
+ *   <li><b>Non-vanilla variants</b> (beach, jungle, jungle_tree, mesa, mesa_fortified, mountain,
+ *       mountain_alpine, mushroom, swamp, swamp_fortified) use new flat tags
+ *       {@code domesticationinnovation:petshop_cage_<biome>} (e.g. {@code petshop_cage_jungle}).
+ *       All cage markers in a given variant use the same biome tag.</li>
+ *   <li><b>Fishtank marker</b> always uses {@code domesticationinnovation:petstore_fishtank}
+ *       for every variant.</li>
+ *   <li><b>Chest marker</b> binds {@code domesticationinnovation:chests/petshop_chest} loot
+ *       table to the block below the marker (mirrors DI).</li>
+ * </ul>
  *
- * <p>If all three layers yield no entries, the marker is cleared (block → AIR) and a debug log
- * line records the reason. No crash, no spawn.</p>
+ * <p>Optional data-driven spawn profiles at {@code ctov:petshop_profiles/<variant>/<marker>.json}
+ * allow per-(variant, marker) overrides of weight/baby/age fields (age may be negative, e.g.
+ * {@code -60000} for a permanent baby). Profiles are consulted between the primary tag and the
+ * DI fallback tag.</p>
  */
 public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 	public static final StructurePoolElementType<PetshopCompatStructurePoolElement> TYPE = () -> CODEC;
@@ -81,16 +89,18 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 		instance.group(templateCodec(), processorsCodec(), projectionCodec()).apply(instance, PetshopCompatStructurePoolElement::new)
 	);
 
-	// Per task spec §3: CTOV-specific entity tags live under the `domesticationinnovation` namespace
+	// Per task §3: CTOV-specific entity tags live under the `domesticationinnovation` namespace
 	// so users can edit them with the same datapack tooling they already use for DI's own tags.
 	private static final String TAG_NAMESPACE = "domesticationinnovation";
-	private static final String TAG_BASE_PATH = "petshop/ctov";
 	// Profile JSON resources are a CTOV-internal concept and live under CTOV's own namespace.
 	private static final String PROFILE_NAMESPACE = "ctov";
 	private static final String PROFILE_BASE_PATH = "petshop_profiles";
 	// Loot table used by the petshop chest marker when DI is loaded. Owned by DI; we only reference it.
 	private static final ResourceLocation DI_PETSHOP_CHEST_LOOT =
 		ResourceLocation.fromNamespaceAndPath("domesticationinnovation", "chests/petshop_chest");
+	// Fishtank tag (shared across all variants) — DI-owned, unchanged.
+	private static final ResourceLocation FISHTANK_TAG =
+		ResourceLocation.fromNamespaceAndPath("domesticationinnovation", "petstore_fishtank");
 
 	protected PetshopCompatStructurePoolElement(Either<ResourceLocation, StructureTemplate> template, Holder<StructureProcessorList> processors, StructureTemplatePool.Projection projection) {
 		super(template, processors, projection);
@@ -117,8 +127,8 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 		String variant = resolveVariant();
 		SpawnResolution resolution = resolveSpawns(serverLevel, variant, marker);
 		if (enablePetshopDebugLogging()) {
-			CTOV.LOGGER.info("[CTOV-DI-Compat] marker={} variant={} ctovTag={} fallbackTag={} entries={} reason={}",
-				marker, variant, resolution.ctovTag, resolution.fallbackTag, resolution.entries.size(), resolution.reason);
+			CTOV.LOGGER.info("[CTOV-DI-Compat] marker={} variant={} primaryTag={} fallbackTag={} entries={} reason={}",
+				marker, variant, resolution.primaryTag, resolution.fallbackTag, resolution.entries.size(), resolution.reason);
 		}
 		if (marker.equals("petshop_water")) {
 			accessor.setBlock(structureBlockInfo.pos(), resolveWaterDecoration(random), 2);
@@ -194,27 +204,39 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 
 	private SpawnResolution resolveSpawns(ServerLevelAccessor serverLevel, String variant, String marker) {
 		List<WeightedSpawn> entries = new ArrayList<>();
-		ResourceLocation ctovSemanticTag = null;
-		ResourceLocation diFallbackTag = null;
+		ResourceLocation primaryTag = null;
+		ResourceLocation fallbackTag = null;
 		String reason = "no entries";
 		SpawnProfile profile = getProfile(serverLevel.getLevel().getServer().getResourceManager(), variant, marker);
+		// Layer 1: Primary tag (per-village biome tag).
+		//   For vanilla-aligned variants: petstore_cage_N (N matches the biome family).
+		//   For non-vanilla variants: petshop_cage_<biome> (new CTOV tag).
+		//   For fishtank marker: petstore_fishtank (shared across all variants).
 		if (enableCtovPetshopTagResolution()) {
-			ctovSemanticTag = profile.ctovTag != null ? profile.ctovTag : defaultCtovTag(variant, marker);
-			entries.addAll(readTagEntries(serverLevel, ctovSemanticTag));
-			reason = entries.isEmpty() ? "ctov tag empty" : "ctov tag resolved";
+			primaryTag = profile.ctovTag != null ? profile.ctovTag : defaultCtovTag(variant, marker);
+			if (primaryTag != null) {
+				entries.addAll(readTagEntries(serverLevel, primaryTag));
+				reason = entries.isEmpty() ? "primary tag empty" : "primary tag resolved";
+			}
 		}
+		// Layer 2: Profile entries (per-(variant, marker) for fine-tuning weight/baby/age).
 		if (entries.isEmpty() && !profile.entries.isEmpty()) {
 			entries.addAll(resolveProfileEntries(serverLevel, profile.entries));
 			reason = entries.isEmpty() ? "profile entries unresolved" : "profile entries";
 		}
+		// Layer 3: DI fallback tag — only consulted for cage markers in non-vanilla variants
+		// when the CTOV biome tag yielded no entries. Falls back to petstore_cage_0 (plains/taiga
+		// pets) as a safe default so petshops always spawn SOMETHING even if the user deletes
+		// the CTOV tag without providing a replacement. For vanilla-aligned variants, layer 1
+		// already used the DI tag, so no fallback is needed.
 		if (entries.isEmpty() && enableDiPetshopFallbackTags()) {
-			diFallbackTag = profile.diFallbackTag != null ? profile.diFallbackTag : defaultDiFallbackTag(marker);
-			if (diFallbackTag != null) {
-				entries.addAll(readTagEntries(serverLevel, diFallbackTag));
+			fallbackTag = profile.diFallbackTag != null ? profile.diFallbackTag : defaultDiFallbackTag(variant, marker);
+			if (fallbackTag != null) {
+				entries.addAll(readTagEntries(serverLevel, fallbackTag));
 				reason = entries.isEmpty() ? "di fallback empty" : "di fallback";
 			}
 		}
-		return new SpawnResolution(entries, ctovSemanticTag, diFallbackTag, reason);
+		return new SpawnResolution(entries, primaryTag, fallbackTag, reason);
 	}
 
 	private SpawnProfile getProfile(ResourceManager resourceManager, String variant, String marker) {
@@ -289,23 +311,83 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 		return ResourceLocation.tryParse(object.get(key).getAsString());
 	}
 
-	private ResourceLocation defaultCtovTag(String variant, String marker) {
-		// e.g. domesticationinnovation:petshop/ctov/jungle/petshop_cage_3
-		// Stored under the `domesticationinnovation` namespace per task §3 so users can edit it
-		// alongside DI's own tags (petstore_cage_0 .. petstore_cage_3, petstore_fishtank).
-		return ResourceLocation.fromNamespaceAndPath(TAG_NAMESPACE, TAG_BASE_PATH + "/" + variant + "/" + marker);
+	/**
+	 * Returns the primary tag for a (variant, marker) pair. This is the per-village biome tag.
+	 * For the fishtank marker, returns the shared petstore_fishtank tag regardless of variant.
+	 * For cage markers, returns the variant's biome tag (petstore_cage_N or petshop_cage_<biome>).
+	 */
+	private @Nullable ResourceLocation defaultCtovTag(String variant, String marker) {
+		// Fishtank marker always uses the shared petstore_fishtank tag, regardless of variant.
+		if (marker.equals("petshop_water")) {
+			return FISHTANK_TAG;
+		}
+		// Cage markers: resolve to ONE biome tag per village variant (per user spec).
+		String cageBiome = variantToCageBiome(variant);
+		return cageBiomeToTag(cageBiome);
 	}
 
-	private @Nullable ResourceLocation defaultDiFallbackTag(String marker) {
-		// DI's existing tag IDs (petstore_fishtank, petstore_cage_0 .. petstore_cage_3) are flat names,
-		// not path-based. We must not rename them (task §3 "Do NOT rename DI-owned tags").
+	/**
+	 * Maps a CTOV village variant to its cage biome name. Vanilla-aligned variants return
+	 * a numbered biome ("0".."3") that maps to the original DI tag. Non-vanilla variants
+	 * return a named biome ("jungle", "swamp", etc.) that maps to a new CTOV tag.
+	 */
+	private static String variantToCageBiome(String variant) {
+		return switch (variant) {
+			// Vanilla-aligned — use original DI numbered tags (petstore_cage_0..3)
+			case "plains", "plains_fortified", "taiga", "taiga_fortified", "halloween" -> "0";
+			case "desert", "desert_oasis" -> "1";
+			case "snowy_igloo", "christmas" -> "2";
+			case "savanna", "savanna_na" -> "3";
+			// Non-vanilla — use new CTOV biome tags (petshop_cage_<biome>)
+			case "beach" -> "beach";
+			case "jungle" -> "jungle";
+			case "jungle_tree" -> "bamboo";
+			case "mesa", "mesa_fortified" -> "badlands";
+			case "mountain", "mountain_alpine" -> "mountains";
+			case "mushroom" -> "mushroom";
+			case "swamp", "swamp_fortified" -> "swamp";
+			// Default: plains/taiga tag (safe fallback for unknown variants)
+			default -> "0";
+		};
+	}
+
+	/**
+	 * Maps a cage biome name to its tag ResourceLocation. Numbered biomes ("0".."3") map
+	 * to the original DI tags (petstore_cage_N). Named biomes map to the new CTOV tags
+	 * (petshop_cage_<biome>).
+	 */
+	private static @Nullable ResourceLocation cageBiomeToTag(String biome) {
+		return switch (biome) {
+			case "0" -> ResourceLocation.fromNamespaceAndPath(TAG_NAMESPACE, "petstore_cage_0");
+			case "1" -> ResourceLocation.fromNamespaceAndPath(TAG_NAMESPACE, "petstore_cage_1");
+			case "2" -> ResourceLocation.fromNamespaceAndPath(TAG_NAMESPACE, "petstore_cage_2");
+			case "3" -> ResourceLocation.fromNamespaceAndPath(TAG_NAMESPACE, "petstore_cage_3");
+			// New CTOV biome tags — flat names, no path nesting
+			case "beach", "bamboo", "cherry", "jungle", "mountains", "mushroom", "swamp", "badlands"
+				-> ResourceLocation.fromNamespaceAndPath(TAG_NAMESPACE, "petshop_cage_" + biome);
+			default -> null;
+		};
+	}
+
+	/**
+	 * Returns the DI fallback tag for a (variant, marker) pair. Only non-null for cage markers
+	 * in non-vanilla variants — falls back to petstore_cage_0 (plains/taiga pets) as a safe
+	 * default when the CTOV biome tag is empty. For vanilla-aligned variants and the fishtank
+	 * marker, returns null (layer 1 already covered it).
+	 */
+	private @Nullable ResourceLocation defaultDiFallbackTag(String variant, String marker) {
+		// Fishtank marker has no DI fallback (it always uses petstore_fishtank via the primary tag).
 		if (marker.equals("petshop_water")) {
-			return ResourceLocation.fromNamespaceAndPath("domesticationinnovation", "petstore_fishtank");
+			return null;
 		}
-		if (marker.startsWith("petshop_cage_")) {
-			return ResourceLocation.fromNamespaceAndPath("domesticationinnovation", marker.replace("petshop_", "petstore_"));
-		}
-		return null;
+		String biome = variantToCageBiome(variant);
+		return switch (biome) {
+			// Vanilla-aligned variants already use the DI tag as primary; no fallback needed
+			case "0", "1", "2", "3" -> null;
+			// Non-vanilla variants fall back to petstore_cage_0 (plains/taiga pets) as a safe default.
+			// This ensures petshops always spawn SOMETHING even if the user deletes the CTOV tag.
+			default -> ResourceLocation.fromNamespaceAndPath(TAG_NAMESPACE, "petstore_cage_0");
+		};
 	}
 
 	private String resolveVariant() {
@@ -403,6 +485,6 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 	private record WeightedSpawn(EntityType<?> type, int weight, @Nullable Boolean baby, @Nullable Integer age) {
 	}
 
-	private record SpawnResolution(List<WeightedSpawn> entries, @Nullable ResourceLocation ctovTag, @Nullable ResourceLocation fallbackTag, String reason) {
+	private record SpawnResolution(List<WeightedSpawn> entries, @Nullable ResourceLocation primaryTag, @Nullable ResourceLocation fallbackTag, String reason) {
 	}
 }

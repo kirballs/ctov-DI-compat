@@ -38,33 +38,45 @@ Source: `kirballs/ctov-DI-compat` master branch (MC 1.21.1, architectury multi-l
 |---|---|---|---|
 | G1 | CTOV petshop pieces are placed as `minecraft:single_pool_element`, so vanilla `LegacySinglePoolElement.handleDataMarker` is invoked, not DI's `PetshopStructurePoolElement`. DI's marker logic never runs. | Petshop structures generate with their loot chest (the chest marker is data-block-style and vanilla jigsaw handles the structure-block → air replacement), but **no animals spawn**, and the DI-specific `petshop_chest` loot table is never set (the chest is empty or uses a fallback loot table). | Introduce `ctov:petshop_compat` element type on the CTOV side that mirrors DI's `handleDataMarker`. |
 | G2 | DI only auto-injects into 5 vanilla village pools. CTOV's 16 non-vanilla variants (beach, christmas, halloween, desert_oasis, jungle, jungle_tree, mesa, mesa_fortified, mountain, mountain_alpine, mushroom, plains_fortified, savanna_na, swamp, swamp_fortified, taiga_fortified) **never receive a petshop piece from DI**, only from CTOV's own lithostitched modifiers — but those use the wrong element type, so even CTOV's petshops don't spawn animals. | Non-vanilla biome petshops generate but are visually empty (no animals). | Same fix as G1 + G3. |
-| G3 | DI's tags are flat (`domesticationinnovation:petstore_cage_0` etc.) and shared across all biomes. CTOV's biome-themed variants (e.g. jungle tree, mesa, mountain alpine, swamp) would benefit from biome-appropriate entity lists (e.g. parrots/ocelots for jungle, armadillos for mesa, foxes for taiga_fortified). | No way to customize per-variant entity lists without editing CTOV code. | Add CTOV-specific tags under `domesticationinnovation:petshop/ctov_<variant>/...` namespace, resolvable per-marker, with fallback to the matching DI base tag. **Namespace `domesticationinnovation` per task spec** so users can edit them with standard datapack tooling alongside the existing DI tags. |
+| G3 | DI's tags are flat (`domesticationinnovation:petstore_cage_0` etc.) and shared across all biomes. CTOV's biome-themed variants (e.g. jungle tree, mesa, mountain alpine, swamp) would benefit from biome-appropriate entity lists (e.g. parrots/ocelots for jungle, armadillos for mesa, foxes for taiga_fortified). | No way to customize per-variant entity lists without editing CTOV code. | Add CTOV-specific tags under `domesticationinnovation:petshop_cage_<biome>` (e.g. `petshop_cage_jungle`, `petshop_cage_swamp`). **Per-village** scheme: one tag per variant, shared across all cage markers in that village. Vanilla-aligned variants continue to use DI's original numbered tags (`petstore_cage_0..3`). |
 | G4 | No data-driven spawn profile mechanism — every spawn detail (count, weight, baby, age) is hardcoded in DI. Cannot set `age = -60000` for permanent babies, cannot bias weights, cannot mark a specific entity as baby-only. | Power users cannot tune petshop spawns without code edits or full-tag replacements. | Add optional JSON profile resource at `ctov:petshop_profiles/<variant>/<marker>.json` with `entity / weight / baby / age` entries. Tag resolution is the primary path; profiles are an opt-in override layer. |
 | G5 | DI never calls `setBaby(true)` or `setAge(...)` on spawned mobs. | All spawned petshop animals are adults. | CTOV compat layer supports per-entry `baby` and `age` (including negative values like `-60000` for permanent babies). Config toggle `forcePetshopBabySpawns` available as a global override. |
 | G6 | No debug visibility into which marker resolved to which tag/entity. | Bug reports impossible to triage. | CTOV compat layer logs `[CTOV-DI-Compat] marker=... variant=... ctovTag=... fallbackTag=... entries=... reason=...` and `spawned marker=... entity=... baby=... age=...` when `enablePetshopDebugLogging = true`. |
 | G7 | The 21 modifier JSONs hardcode `minecraft:single_pool_element`. Switching the element type means updating all 21 files in lockstep. | Migration risk; one missed file means that variant breaks. | Bulk-edit all 21 modifier JSONs to use `ctov:petshop_compat` when DI is loaded. Keep the existing load-conditions (any of DI/rats/simplycats) so non-DI loaders don't break. |
 | G8 | The new `PetshopCompatStructurePoolElement.TYPE` is declared but never registered to `Registries.STRUCTURE_POOL_ELEMENT`. Codec cannot be deserialized → game fails to load any pool referencing `ctov:petshop_compat`. | Hard crash on world load once modifier JSONs are switched. | Register `TYPE` in `fabric/.../WorldgenRegistry` (via `BuiltInRegistries.STRUCTURE_POOL_ELEMENT`) and `neoforge/.../WorldgenRegistry` (via `DeferredRegister`). Forge subproject picks up the neoforge registration via `transformProductionNeoForge`. |
-| G9 | Copilot's first-draft code used `ctov_compat` as the tag namespace. Task §3 explicitly requires `domesticationinnovation` so that CTOV tags live alongside DI's existing tags and remain editable via standard datapack tooling for the DI tag namespace. | Tags would not be discoverable by users editing DI tags; would require a separate `ctov_compat` datapack namespace. | Change `PROFILE_NAMESPACE` constant (used for tag IDs) from `"ctov_compat"` to `"domesticationinnovation"`. Profile resource files (a CTOV-internal concept) stay under `ctov:` namespace. |
+| G9 | Copilot's first-draft code used `ctov_compat` as the tag namespace, then a path-based scheme `domesticationinnovation:petshop/ctov/<variant>/<marker>` (85 files). User spec revision: tags should be **flat** `domesticationinnovation:petshop_cage_<biome>` (8 files), per-village not per-(variant, marker). | 85 path-based tag files don't match user's desired flat naming; per-marker resolution doesn't match the per-village theming user wants. | Replaced 85 path-based tags with 8 flat tags (`petshop_cage_beach/bamboo/badlands/cherry/jungle/mountains/mushroom/swamp`). Updated `defaultCtovTag` to map variant → biome → tag via `variantToCageBiome` + `cageBiomeToTag` switch statements. Vanilla-aligned variants map to original numbered tags; non-vanilla variants map to new biome tags. |
 
-## 4. Resolution order (per task §3)
+## 4. Resolution order (per task §3, revised)
 
 For each `(variant, marker)` pair at spawn time:
 
-1. **CTOV semantic tag** — `domesticationinnovation:petshop/ctov_<variant>/<marker_name>` (e.g. `domesticationinnovation:petshop/ctov_jungle/petshop_cage_3`). Resolved only if `enableCtovPetshopTagResolution = true` (default). Skipped silently if the tag is empty/missing.
+1. **Primary tag** — the per-village biome tag:
+   - Vanilla-aligned variants: `domesticationinnovation:petstore_cage_N` (N matches the biome family: 0=plains/taiga, 1=desert, 2=snowy, 3=savanna)
+   - Non-vanilla variants: `domesticationinnovation:petshop_cage_<biome>` (one of: beach, bamboo, badlands, cherry, jungle, mountains, mushroom, swamp)
+   - Fishtank marker: always `domesticationinnovation:petstore_fishtank` regardless of variant
+   - Resolved only if `enableCtovPetshopTagResolution = true` (default). Skipped silently if empty.
 2. **Profile entries** — if a `ctov:petshop_profiles/<variant>/<marker>.json` resource exists, its `entries[]` are resolved against the entity type registry. Allows weight / baby / age overrides.
-3. **DI fallback tag** — `domesticationinnovation:petstore_<...>` per `defaultDiFallbackTag(marker)` (e.g. `petshop_cage_0` → `domesticationinnovation:petstore_cage_0`). Resolved only if `enableDiPetshopFallbackTags = true` (default).
+3. **DI fallback tag** — `domesticationinnovation:petstore_cage_0` (plains/taiga pets) as a safe default. Only consulted for cage markers in **non-vanilla** variants (vanilla-aligned variants already used the DI tag as primary in step 1). Resolved only if `enableDiPetshopFallbackTags = true` (default).
 4. **Safe failure** — if all three layers yield zero entries, the marker is removed (block set to AIR) and a debug log line records the reason. No crash, no spawn.
 
-## 5. Per-variant DI fallback mapping (chosen by biome theme)
+## 5. Per-variant → biome tag mapping
 
-| CTOV variant | DI base tag fallback per marker |
-|---|---|
-| plains, plains_fortified, taiga_fortified, mushroom, swamp, swamp_fortified, mountain, halloween (dark_forest) | `cage_0` for `petshop_cage_0` (wolf/cat/rabbit), `cage_2` for `petshop_cage_2`, `cage_3` for `petshop_cage_3`, `fishtank` for `petshop_water` |
-| desert, desert_oasis, mesa, mesa_fortified | `cage_1` for `petshop_cage_1`, others as above |
-| snowy_igloo, christmas, mountain_alpine | `cage_2` for `petshop_cage_2`, others as above |
-| savanna, savanna_na, jungle, jungle_tree, beach | `cage_3` for `petshop_cage_3`, others as above |
+| CTOV variant | Cage biome | Primary tag |
+|---|---|---|
+| `plains`, `plains_fortified`, `taiga`, `taiga_fortified`, `halloween` | 0 (plains/taiga) | `petstore_cage_0` |
+| `desert`, `desert_oasis` | 1 (desert) | `petstore_cage_1` |
+| `snowy_igloo`, `christmas` | 2 (snowy) | `petstore_cage_2` |
+| `savanna`, `savanna_na` | 3 (savanna) | `petstore_cage_3` |
+| `beach` | beach | `petshop_cage_beach` |
+| `jungle` | jungle | `petshop_cage_jungle` |
+| `jungle_tree` | bamboo | `petshop_cage_bamboo` |
+| `mesa`, `mesa_fortified` | badlands | `petshop_cage_badlands` |
+| `mountain`, `mountain_alpine` | mountains | `petshop_cage_mountains` |
+| `mushroom` | mushroom | `petshop_cage_mushroom` |
+| `swamp`, `swamp_fortified` | swamp | `petshop_cage_swamp` |
+| (reserved, no current variant) | cherry | `petshop_cage_cherry` |
 
-The current `defaultDiFallbackTag(marker)` implementation only varies by marker, not by variant — that is intentional and matches DI's own behavior (DI uses the same tag for all biomes). Per-variant customization is achieved via the CTOV semantic tag layer (step 1 above), not by changing the fallback mapping.
+All variants use `petstore_fishtank` for the `petshop_water` marker.
 
 ## 6. Notes on task spec vs repo reality
 

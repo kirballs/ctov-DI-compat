@@ -1,8 +1,0 @@
-{
-	"replace": false,
-	"#comment": "CTOV petshop tag — variant=mesa_fortified (Fortified mesa / badlands village variant), marker=petshop_cage_0. Small pet cage — wolf/cat/rabbit-style mobs (DI: plains & taiga). Override this tag via datapack to customize. Falls back to the matching domesticationinnovation:petstore_* tag when this list is empty or removed.",
-	"values": [
-		"minecraft:rabbit",
-		"minecraft:cat"
-	]
-}

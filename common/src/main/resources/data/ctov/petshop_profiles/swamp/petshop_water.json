@@ -1,6 +1,6 @@
 {
-	"_doc": "Sample data-driven spawn profile for the swamp petshop's fish tank. Demonstrates aquatic mobs with weight bias toward tropical_fish. age=-60000 on axolotl makes it a permanent juvenile (axolotls are AgeableMob).",
-	"ctov_tag": "domesticationinnovation:petshop/ctov/swamp/petshop_water",
+	"_doc": "Sample data-driven spawn profile for the swamp petshop's fish tank. The fishtank marker always uses domesticationinnovation:petstore_fishtank as its primary tag (shared across all variants), so this profile's 'entries' act as an override layer with weight bias toward tropical_fish. age=-60000 on axolotl makes it a permanent juvenile (axolotls are AgeableMob).",
+	"ctov_tag": "domesticationinnovation:petstore_fishtank",
 	"di_fallback_tag": "domesticationinnovation:petstore_fishtank",
 	"entries": [
 		{ "entity": "minecraft:tropical_fish", "weight": 6 },

@@ -1,0 +1,9 @@
+{
+	"replace": false,
+	"#comment": "Cherry grove petshop cage — currently unused by CTOV variants. Provided for future variants or user customization via datapack.",
+	"values": [
+		"minecraft:cat",
+		"minecraft:rabbit",
+		"minecraft:bee"
+	]
+}

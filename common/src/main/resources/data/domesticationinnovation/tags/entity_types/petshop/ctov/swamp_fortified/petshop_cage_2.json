@@ -1,8 +1,0 @@
-{
-	"replace": false,
-	"#comment": "CTOV petshop tag — variant=swamp_fortified (Fortified swamp village variant), marker=petshop_cage_2. Ice terrarium — cold-biome mobs (DI: snowy). Override this tag via datapack to customize. Falls back to the matching domesticationinnovation:petstore_* tag when this list is empty or removed.",
-	"values": [
-		"minecraft:fox",
-		"minecraft:frog"
-	]
-}

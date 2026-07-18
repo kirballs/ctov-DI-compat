@@ -1,7 +1,7 @@
 {
-	"_doc": "Sample data-driven spawn profile for the jungle petshop's tropical bird cage. Profile JSONs are OPTIONAL — when absent, the CTOV compat layer falls back to the CTOV semantic tag (domesticationinnovation:petshop/ctov_jungle/petshop_cage_3) and then to the DI base tag (domesticationinnovation:petstore_cage_3). When present, the profile's 'entries' array takes precedence over the DI fallback (but NOT over the CTOV semantic tag). Use 'ctov_tag' / 'di_fallback_tag' to override the tag IDs used at runtime. Each entry supports: entity (required), weight (int, default 1), baby (bool, optional), age (int, optional, may be negative — e.g. -60000 for a permanent baby that will never age up).",
-	"ctov_tag": "domesticationinnovation:petshop/ctov/jungle/petshop_cage_3",
-	"di_fallback_tag": "domesticationinnovation:petstore_cage_3",
+	"_doc": "Sample data-driven spawn profile for the jungle petshop's cage_3 marker. Profile JSONs are OPTIONAL — when absent, the CTOV compat layer uses the per-village biome tag (domesticationinnovation:petshop_cage_jungle for the jungle variant). When present, the profile's 'entries' array takes precedence over the DI fallback tag (but NOT over the primary biome tag — entries are only consulted if the primary tag is empty). Use 'ctov_tag' / 'di_fallback_tag' to override the tag IDs used at runtime. Each entry supports: entity (required), weight (int, default 1), baby (bool, optional), age (int, optional, may be negative — e.g. -60000 for a permanent baby that will never age up).",
+	"ctov_tag": "domesticationinnovation:petshop_cage_jungle",
+	"di_fallback_tag": "domesticationinnovation:petstore_cage_0",
 	"entries": [
 		{ "entity": "minecraft:parrot", "weight": 4 },
 		{ "entity": "minecraft:ocelot", "weight": 2, "baby": true },

@@ -1,0 +1,9 @@
+{
+	"replace": false,
+	"#comment": "Beach petshop cage — coastal mobs. Used by CTOV beach variant.",
+	"values": [
+		"minecraft:turtle",
+		"minecraft:rabbit",
+		"minecraft:cat"
+	]
+}
