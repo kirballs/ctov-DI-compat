@@ -20,6 +20,7 @@ public class ctovNeo {
         NeoForge.EVENT_BUS.register(this);
         
         WorldgenRegistry.PROCESSORS.register(modEventBus);
+        WorldgenRegistry.POOL_ELEMENTS.register(modEventBus);
     }
     @SubscribeEvent
     public void onServerAboutToStartEvent(ServerAboutToStartEvent event) {

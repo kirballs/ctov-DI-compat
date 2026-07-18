@@ -29,7 +29,9 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.BaseCoralPlantTypeBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pools.LegacySinglePoolElement;
@@ -49,18 +51,51 @@ import java.util.Locale;
 
 import static net.choicetheorem.ctov.platform.CTOVConfigHelper.*;
 
+/**
+ * CTOV-side compatibility layer that reproduces Domestication Innovation's petshop marker-driven
+ * spawning for CTOV petshop structure pieces.
+ *
+ * <p>DI registers its own {@code domesticationinnovation:petshop} pool element type which handles
+ * {@code petshop_water}, {@code petshop_chest}, {@code petshop_cage_0..3} data markers. DI only
+ * auto-injects into the 5 vanilla village pools (plains/desert/savanna/snowy/taiga); CTOV's 16
+ * non-vanilla biome variants would never receive petshop spawns through DI alone.</p>
+ *
+ * <p>This element mirrors DI's marker handling for every CTOV variant, with three layers of
+ * entity resolution per (variant, marker):</p>
+ * <ol>
+ *   <li>CTOV semantic tag at {@code domesticationinnovation:petshop/ctov_<variant>/<marker>}
+ *       — user-editable via standard datapack tooling in the DI namespace.</li>
+ *   <li>Optional spawn profile JSON at {@code ctov:petshop_profiles/<variant>/<marker>.json}
+ *       — supports per-entry {@code entity / weight / baby / age} (age may be negative,
+ *       e.g. {@code -60000} for a permanent baby).</li>
+ *   <li>DI fallback tag ({@code domesticationinnovation:petstore_cage_0..3 / petstore_fishtank})
+ *       — DI-owned, never modified.</li>
+ * </ol>
+ *
+ * <p>If all three layers yield no entries, the marker is cleared (block → AIR) and a debug log
+ * line records the reason. No crash, no spawn.</p>
+ */
 public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 	public static final StructurePoolElementType<PetshopCompatStructurePoolElement> TYPE = () -> CODEC;
 	public static final Codec<PetshopCompatStructurePoolElement> CODEC = RecordCodecBuilder.create((instance) ->
 		instance.group(templateCodec(), processorsCodec(), projectionCodec()).apply(instance, PetshopCompatStructurePoolElement::new)
 	);
-	private static final String PROFILE_NAMESPACE = "ctov_compat";
+
+	// Per task spec §3: CTOV-specific entity tags live under the `domesticationinnovation` namespace
+	// so users can edit them with the same datapack tooling they already use for DI's own tags.
+	private static final String TAG_NAMESPACE = "domesticationinnovation";
+	private static final String TAG_BASE_PATH = "petshop/ctov";
+	// Profile JSON resources are a CTOV-internal concept and live under CTOV's own namespace.
+	private static final String PROFILE_NAMESPACE = "ctov";
 	private static final String PROFILE_BASE_PATH = "petshop_profiles";
-	
+	// Loot table used by the petshop chest marker when DI is loaded. Owned by DI; we only reference it.
+	private static final ResourceLocation DI_PETSHOP_CHEST_LOOT =
+		ResourceLocation.fromNamespaceAndPath("domesticationinnovation", "chests/petshop_chest");
+
 	protected PetshopCompatStructurePoolElement(Either<ResourceLocation, StructureTemplate> template, Holder<StructureProcessorList> processors, StructureTemplatePool.Projection projection) {
 		super(template, processors, projection);
 	}
-	
+
 	@Override
 	public void handleDataMarker(LevelAccessor accessor, StructureTemplate.StructureBlockInfo structureBlockInfo, BlockPos pos, Rotation rotation, RandomSource random, BoundingBox box) {
 		String marker = structureBlockInfo.nbt() == null ? "" : structureBlockInfo.nbt().getString("metadata");
@@ -74,10 +109,16 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 			accessor.setBlock(structureBlockInfo.pos(), Blocks.AIR.defaultBlockState(), 2);
 			return;
 		}
+		// Chest marker has no entity-spawn semantics — handle it first and short-circuit.
+		if (marker.equals("petshop_chest")) {
+			handleChestMarker(accessor, structureBlockInfo, random);
+			return;
+		}
 		String variant = resolveVariant();
 		SpawnResolution resolution = resolveSpawns(serverLevel, variant, marker);
 		if (enablePetshopDebugLogging()) {
-			CTOV.LOGGER.info("[CTOV-DI-Compat] marker={} variant={} ctovTag={} fallbackTag={} entries={} reason={}", marker, variant, resolution.ctovTag, resolution.fallbackTag, resolution.entries.size(), resolution.reason);
+			CTOV.LOGGER.info("[CTOV-DI-Compat] marker={} variant={} ctovTag={} fallbackTag={} entries={} reason={}",
+				marker, variant, resolution.ctovTag, resolution.fallbackTag, resolution.entries.size(), resolution.reason);
 		}
 		if (marker.equals("petshop_water")) {
 			accessor.setBlock(structureBlockInfo.pos(), resolveWaterDecoration(random), 2);
@@ -95,11 +136,35 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 			}
 			spawnEntity(serverLevel, structureBlockInfo.pos(), random, selected);
 			if (enablePetshopDebugLogging()) {
-				CTOV.LOGGER.info("[CTOV-DI-Compat] spawned marker={} entity={} baby={} age={}", marker, selected.type, selected.baby, selected.age);
+				CTOV.LOGGER.info("[CTOV-DI-Compat] spawned marker={} entity={} baby={} age={}",
+					marker, selected.type, selected.baby, selected.age);
 			}
 		}
 	}
-	
+
+	/**
+	 * Mirrors DI's chest-marker handling: clear the structure-block marker, then bind DI's
+	 * petshop_chest loot table to the block below (where the chest actually sits in every
+	 * petshop template). If DI is not actually loaded the loot table won't resolve and the
+	 * chest stays empty — but we only register this element type when DI is loaded anyway
+	 * (per the lithostitched load-conditions in the modifier JSONs), so this is a defensive
+	 * no-op rather than a likely failure mode.
+	 */
+	private void handleChestMarker(LevelAccessor accessor, StructureTemplate.StructureBlockInfo info, RandomSource random) {
+		accessor.setBlock(info.pos(), Blocks.AIR.defaultBlockState(), 2);
+		BlockPos chestPos = info.pos().below();
+		BlockEntity existing = accessor.getBlockEntity(chestPos);
+		if (existing instanceof RandomizableContainerBlockEntity container) {
+			container.setLootTable(DI_PETSHOP_CHEST_LOOT, random.nextLong());
+			container.setChanged();
+		} else {
+			RandomizableContainerBlockEntity.setLootTable(accessor, random, chestPos, DI_PETSHOP_CHEST_LOOT);
+		}
+		if (enablePetshopDebugLogging()) {
+			CTOV.LOGGER.info("[CTOV-DI-Compat] chest marker bound lootTable={} at={}", DI_PETSHOP_CHEST_LOOT, chestPos);
+		}
+	}
+
 	private void spawnEntity(ServerLevelAccessor level, BlockPos pos, RandomSource random, WeightedSpawn selected) {
 		Entity entity = selected.type.create(level.getLevel());
 		if (entity == null) {
@@ -113,9 +178,11 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 			mob.finalizeSpawn(level, level.getCurrentDifficultyAt(mob.blockPosition()), MobSpawnType.STRUCTURE, null, null);
 		}
 		if (entity instanceof AgeableMob ageable) {
+			// Apply explicit age first (allows age=-60000 for a permanent baby that will never grow up).
+			// Only fall back to the baby flag if age was not specified. Non-ageable entities ignore both.
 			if (selected.age != null) {
 				ageable.setAge(selected.age);
-			} else if (selected.baby != null && selected.baby) {
+			} else if (Boolean.TRUE.equals(selected.baby)) {
 				ageable.setBaby(true);
 			}
 			if (forcePetshopBabySpawns() && selected.age == null) {
@@ -124,7 +191,7 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 		}
 		level.addFreshEntityWithPassengers(entity);
 	}
-	
+
 	private SpawnResolution resolveSpawns(ServerLevelAccessor serverLevel, String variant, String marker) {
 		List<WeightedSpawn> entries = new ArrayList<>();
 		ResourceLocation ctovSemanticTag = null;
@@ -149,21 +216,23 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 		}
 		return new SpawnResolution(entries, ctovSemanticTag, diFallbackTag, reason);
 	}
-	
+
 	private SpawnProfile getProfile(ResourceManager resourceManager, String variant, String marker) {
-		ResourceLocation profileId = ResourceLocation.fromNamespaceAndPath(PROFILE_NAMESPACE, PROFILE_BASE_PATH + "/" + variant + "/" + marker + ".json");
+		ResourceLocation profileId = ResourceLocation.fromNamespaceAndPath(
+			PROFILE_NAMESPACE, PROFILE_BASE_PATH + "/" + variant + "/" + marker + ".json");
 		return resourceManager.getResource(profileId)
 			.map(resource -> parseProfile(resource, profileId))
 			.orElse(SpawnProfile.EMPTY);
 	}
-	
+
 	private SpawnProfile parseProfile(Resource resource, ResourceLocation profileId) {
 		try (Reader reader = resource.openAsReader()) {
 			JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
 			ResourceLocation ctovTag = readResourceLocation(root, "ctov_tag");
 			ResourceLocation diTag = readResourceLocation(root, "di_fallback_tag");
 			List<SpawnEntry> entries = new ArrayList<>();
-			JsonArray array = root.has("entries") && root.get("entries").isJsonArray() ? root.getAsJsonArray("entries") : new JsonArray();
+			JsonArray array = root.has("entries") && root.get("entries").isJsonArray()
+				? root.getAsJsonArray("entries") : new JsonArray();
 			for (JsonElement element : array) {
 				if (!element.isJsonObject()) {
 					continue;
@@ -184,7 +253,7 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 			return SpawnProfile.EMPTY;
 		}
 	}
-	
+
 	private List<WeightedSpawn> resolveProfileEntries(ServerLevelAccessor serverLevel, List<SpawnEntry> profileEntries) {
 		Registry<EntityType<?>> registry = serverLevel.registryAccess().registryOrThrow(Registries.ENTITY_TYPE);
 		List<WeightedSpawn> resolved = new ArrayList<>();
@@ -196,7 +265,7 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 		}
 		return resolved;
 	}
-	
+
 	private List<WeightedSpawn> readTagEntries(ServerLevelAccessor serverLevel, @Nullable ResourceLocation tagId) {
 		if (tagId == null) {
 			return List.of();
@@ -212,20 +281,24 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 		}
 		return entries;
 	}
-	
+
 	private static @Nullable ResourceLocation readResourceLocation(JsonObject object, String key) {
 		if (!object.has(key)) {
 			return null;
 		}
 		return ResourceLocation.tryParse(object.get(key).getAsString());
 	}
-	
+
 	private ResourceLocation defaultCtovTag(String variant, String marker) {
-		String markerName = marker.replace("petshop_", "");
-		return ResourceLocation.fromNamespaceAndPath(PROFILE_NAMESPACE, "petshop/ctov_" + variant + "/" + markerName);
+		// e.g. domesticationinnovation:petshop/ctov/jungle/petshop_cage_3
+		// Stored under the `domesticationinnovation` namespace per task §3 so users can edit it
+		// alongside DI's own tags (petstore_cage_0 .. petstore_cage_3, petstore_fishtank).
+		return ResourceLocation.fromNamespaceAndPath(TAG_NAMESPACE, TAG_BASE_PATH + "/" + variant + "/" + marker);
 	}
-	
+
 	private @Nullable ResourceLocation defaultDiFallbackTag(String marker) {
+		// DI's existing tag IDs (petstore_fishtank, petstore_cage_0 .. petstore_cage_3) are flat names,
+		// not path-based. We must not rename them (task §3 "Do NOT rename DI-owned tags").
 		if (marker.equals("petshop_water")) {
 			return ResourceLocation.fromNamespaceAndPath("domesticationinnovation", "petstore_fishtank");
 		}
@@ -234,7 +307,7 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 		}
 		return null;
 	}
-	
+
 	private String resolveVariant() {
 		return this.template.left()
 			.map(location -> {
@@ -249,7 +322,7 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 			})
 			.orElse("plains");
 	}
-	
+
 	private int resolveSpawnCount(String marker, RandomSource random) {
 		return switch (marker) {
 			case "petshop_water" -> 2;
@@ -259,7 +332,7 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 			default -> 0;
 		};
 	}
-	
+
 	private @Nullable WeightedSpawn pickWeighted(RandomSource random, List<WeightedSpawn> entries) {
 		if (entries.isEmpty()) {
 			return null;
@@ -280,7 +353,7 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 		}
 		return entries.get(entries.size() - 1);
 	}
-	
+
 	private BlockState resolveWaterDecoration(RandomSource random) {
 		float chance = random.nextFloat();
 		if (chance < 0.5F) {
@@ -298,7 +371,7 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 		}
 		return Blocks.WATER.defaultBlockState();
 	}
-	
+
 	@Override
 	protected StructurePlaceSettings getSettings(Rotation rotation, BoundingBox box, boolean keepJigsaws) {
 		StructurePlaceSettings settings = new StructurePlaceSettings();
@@ -314,22 +387,22 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
 		this.getProjection().getProcessors().forEach(settings::addProcessor);
 		return settings;
 	}
-	
+
 	@Override
 	public StructurePoolElementType<?> getType() {
 		return TYPE;
 	}
-	
+
 	private record SpawnEntry(ResourceLocation entity, int weight, @Nullable Boolean baby, @Nullable Integer age) {
 	}
-	
+
 	private record SpawnProfile(@Nullable ResourceLocation ctovTag, @Nullable ResourceLocation diFallbackTag, List<SpawnEntry> entries) {
 		private static final SpawnProfile EMPTY = new SpawnProfile(null, null, List.of());
 	}
-	
+
 	private record WeightedSpawn(EntityType<?> type, int weight, @Nullable Boolean baby, @Nullable Integer age) {
 	}
-	
+
 	private record SpawnResolution(List<WeightedSpawn> entries, @Nullable ResourceLocation ctovTag, @Nullable ResourceLocation fallbackTag, String reason) {
 	}
 }
