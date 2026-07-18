@@ -1,71 +1,117 @@
-# **Welcome to ChoiceTheorem's overhauled village!**
+# **ChoiceTheorem's Overhauled Village — DI Compat Fork**
 
-[![Discord Badge](https://img.shields.io/discord/894248275841003542?color=blue&logo=discord "Join our Discord Server")](https://discord.gg/JzYEw7PxQv)
-[![GitHub Badge](https://img.shields.io/appveyor/build/ChoiceTheorem/ChoiceTheorem-s-overhauled-village?color=black&logo=github)](https://github.com/ChoiceTheorem/ChoiceTheorem-s-overhauled-village)
-The Youtube channel is [here]("https://www.youtube.com/channel/UCUSv0t-aWToQkpP5eonHmlA)
-![Twitter Follow](https://img.shields.io/twitter/follow/ChoiceTheorem?style=social)
-![](https://img.shields.io/badge/environment-server-orangered?style=flat-square)
-![Banner](https://api.mcbanners.com/banner/saved/LPRxAWJYUxKliD.png)
+[![GitHub Badge](https://img.shields.io/badge/fork-DI%20compat%20build-black?logo=github)](https://github.com/kirballs/ctov-DI-compat)
+![Environment](https://img.shields.io/badge/environment-server-orangered?style=flat-square)
+![MC Version](https://img.shields.io/badge/minecraft-1.21.1-blue?style=flat-square)
+![Loaders](https://img.shields.io/badge/loaders-fabric%20%7C%20forge%20%7C%20neoforge%20%7C%20quilt-blueviolet?style=flat-square)
+
+> **This is a fork** of [ChoiceTheorem's Overhauled Village](https://github.com/ChoiceTheorem/ChoiceTheorem-s-overhauled-village)
+> focused on robust compatibility with **Domestication Innovation** pet shops. It is not
+> affiliated with the upstream project. The upstream Modrinth page is intentionally not
+> linked here — please direct bug reports for this fork to
+> [this repo's Issues](https://github.com/kirballs/ctov-DI-compat/issues), not to upstream.
+
+## **Scope of this fork**
+
+The fork adds a CTOV-side compatibility layer that makes DI pet shops spawn animals
+correctly across **all 21 CTOV village variants**, including the 16 non-vanilla biome
+variants (beach, christmas, dark_forest/halloween, desert_oasis, jungle, jungle_tree,
+mesa, mesa_fortified, mountain, mountain_alpine, mushroom, plains_fortified, savanna_na,
+swamp, swamp_fortified, taiga_fortified) that DI does not natively inject into.
+
+Highlights:
+
+- New `ctov:petshop_compat` structure pool element type that mirrors DI's marker-driven
+  spawning (`petshop_water`, `petshop_chest`, `petshop_cage_0..3`).
+- 85 CTOV-specific entity tags under `domesticationinnovation:petshop/ctov/<variant>/<marker>`
+  — user-editable via datapack or KubeJS, namespace-compatible with DI's own tags.
+- Optional data-driven spawn profiles (`ctov:petshop_profiles/<variant>/<marker>.json`)
+  supporting per-entry `weight`, `baby`, `age` (including `age = -60000` for permanent
+  babies).
+- 5 config toggles for safe rollout and debugging.
+- DI-owned tags are **untouched** — only additive CTOV tags are introduced.
+
+Full design docs: [`docs/DI_COMPAT_PETSHOP.md`](docs/DI_COMPAT_PETSHOP.md).
 
 ## **Description**
 
-ChoiceTheorem's overhauled village is a structure datapack package as a mod for forge and fabric that enhances and creates new villages and pillager outpost variants. This pack adds 20 village variants and pillager outpost variants that perfectly fit into your Minecraft worlds. The existing villages are rebuilt from the ground up and each biome type can generate two types of structures. In total, there are 23 village variants and 14 pillager outpost variants tailored to suit the terrain, theme and biomes.
+ChoiceTheorem's Overhauled Village is a structure datapack packaged as a mod for Fabric,
+Forge, NeoForge and Quilt that enhances and creates new villages and pillager outpost
+variants. This pack adds 20+ village variants and pillager outpost variants that fit
+naturally into your Minecraft worlds. The existing villages are rebuilt from the ground up
+and each biome type can generate two types of structures. In total, there are 23 village
+variants and 14 pillager outpost variants tailored to suit the terrain, theme and biomes.
 
-There will be no backporting beyond 1.18.2 for the mod version and 1.17 for the datapack version.
+The mod targets Minecraft 1.21.1.
 
 <details><summary>FAQs</summary>
-These are just some of the most asked questions I've had from people, but if you have any more, please leave a comment down below and I'll try to help you as best we can.
 
-**1. Is it safe to update CTOV to a newer version?**<br/>
-Yes. If any serious problems arise because of that, let me know.
+**1. Is it safe to update CTOV to a newer version?**
+Yes. If any serious problems arise because of that, please open an issue.
 
-**2. Is it safe to add CTOV to an already existing world?**<br/>
-Yep. Just note that the new structures will only spawn in newly generated chunks.
+**2. Is it safe to add CTOV to an already existing world?**
+Yes. Just note that the new structures will only spawn in newly generated chunks.
 
-**3. Is this mod for Forge or Fabric/Quilt?**<br/>
-All of them. I have a universal version for three mod loaders.
+**3. Is this mod for Forge or Fabric/Quilt?**
+All of them. This is a multi-loader build via Architectury.
 
-**4. How can I locate the new structures?**<br/>
-For 1.18.2: /locate ctov:[structure_from_list]
-For 1.19+: /locate structure ctov:[structure_from_list]
+**4. How can I locate the new structures?**
+`/locate structure ctov:[structure_from_list]` (1.19+).
 
-**5. Does CTOV existing vanilla structures?**</br>
+**5. Does CTOV modify existing vanilla structures?**
 The only structures modified by CTOV are **vanilla villages** in older versions.
 
-**6. What about the loot of these structures?**<br />
-The vast majority of structures use vanilla loot tables for better mod compatibility (see the Compatibility section below for more info), but they also use some custom loot tables to better integrate said structures into the world. You will still find pillager outpost loot in pillager outposts, profession chests in villages, as well as bells, workstations, etc., but also new stuff like food, armour, and other goodies. and you can swap the config folder to adjust to the original OP chest loot.
+**6. What about the loot of these structures?**
+The vast majority of structures use vanilla loot tables for better mod compatibility, but
+some custom loot tables are used to better integrate structures into the world. You will
+still find pillager outpost loot in pillager outposts, profession chests in villages, as
+well as bells, workstations, etc., but also new stuff like food, armour, and other goodies.
 
-**7. How can I report bugs/issues/suggestions?**<br/>
-Please go to my GitHub repo and make an issue there. A discord message will do.
+**7. How can I report bugs/issues/suggestions?**
+Please open an issue on [this fork's GitHub repo](https://github.com/kirballs/ctov-DI-compat/issues).
+For upstream CTOV issues, use the upstream repo.
 
-**8. Can I include CTOV in my modpack?**<br/>
-Sure, but make sure to give credit and a link to our page.
+**8. Can I include CTOV in my modpack?**
+Yes, just make sure to give credit and a link to the project page.
 
-**9. Can I have CTOV for 1.x.x, please?**<br/>
-If it's lower than 1.18.2, no. Just don't ask this question. The technical limit is too high here.
+**9. Can I have CTOV for 1.x.x, please?**
+This fork targets 1.21.1 only. No backports are planned.
 
-**10. Can I give Choicetheorem any commission or support?**<br/>
-I can't take any commissions or monetary support due to a lack of time and mean to receive payments.
+**10. Does this fork break compatibility with the upstream CTOV?**
+No. The fork is purely additive — new files (the petshop compat element, CTOV tags,
+profiles, docs) plus two-line registrations in the existing worldgen registries. The 21
+lithostitched modifier JSONs have their `element_type` switched from
+`minecraft:single_pool_element` to `ctov:petshop_compat`, but this only takes effect when
+DI / rats / simplycats is loaded (load conditions are unchanged). Without those mods, the
+fork behaves identically to upstream.
 </details>
 
 <details><summary>Images</summary>
 
-Some fantastic footage from the mod. All pictures are taken with complementary shaders or complementary reimagined shaders.
-![](https://cdn.modrinth.com/data/fgmhI8kH/images/15d7bf1aa1b7174fde4a5dac2ed81d4b8adb4b06.png)
+Some fantastic footage from the mod. All pictures are taken with complementary shaders or
+complementary reimagined shaders.
 ![](https://i.imgur.com/MBILgX5.png)
 ![](https://i.imgur.com/CpLSx3M.png)
 </details>
 
 ## **Credits**
 
-+ Vichy0623 for codesigning the builds
-+ Robified for converting this datapack into a mod.
+- **ChoiceTheorem** — original CTOV mod, datapack design, village templates.
+- **Vichy0623** — codesigning the upstream builds.
+- **Robified** — converting the original datapack into a mod.
+- **AlexModGuy** — Domestication Innovation, whose `PetshopStructurePoolElement` design
+  this fork mirrors for CTOV's petshop pieces.
+- **Copilot** — initial scaffolding for the petshop compat layer (config + element class)
+  on branch `copilot/update-readme-change-links`; continued and finalized in this fork.
 
 <details><summary>Compatible mods</summary>
 
-+ Most world generation mods like Terralith, Oh Biome you'll go, Biomes O'plenty.
-+ Various structure mods like Town&Tower and Repurposed structures.
-+ Any other structure packs by ChoiceTheorem like Immersive structures.
++ Domestication Innovation (primary compat target — see `docs/DI_COMPAT_PETSHOP.md`).
++ Rats, SimplyCats (existing CTOV load conditions also accept these as petshop providers).
++ Most world generation mods like Terralith, Oh The Biomes You'll Go, Biomes O'Plenty.
++ Various structure mods like Town & Tower and Repurposed Structures.
++ Any other structure packs by ChoiceTheorem like Immersive Structures.
 
 </details>
-You can suggest more mods in my GitHub Issue section.
+
+You can suggest more mods in the GitHub Issues section.
