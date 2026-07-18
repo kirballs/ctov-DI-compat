@@ -1,4 +1,4 @@
-# **ChoiceTheorem's Overhauled Village — DI Compat Fork**
+# ChoiceTheorem's Overhauled Village — DI Compat Fork
 
 [![GitHub Badge](https://img.shields.io/badge/fork-DI%20compat%20build-black?logo=github)](https://github.com/kirballs/ctov-DI-compat)
 ![Environment](https://img.shields.io/badge/environment-server-orangered?style=flat-square)
@@ -11,7 +11,7 @@
 > linked here — please direct bug reports for this fork to
 > [this repo's Issues](https://github.com/kirballs/ctov-DI-compat/issues), not to upstream.
 
-## **Scope of this fork**
+## Scope of this fork
 
 The fork adds a CTOV-side compatibility layer that makes DI pet shops spawn animals
 correctly across **all 21 CTOV village variants**, including the 16 non-vanilla biome
@@ -23,8 +23,11 @@ Highlights:
 
 - New `ctov:petshop_compat` structure pool element type that mirrors DI's marker-driven
   spawning (`petshop_water`, `petshop_chest`, `petshop_cage_0..3`).
-- 85 CTOV-specific entity tags under `domesticationinnovation:petshop/ctov/<variant>/<marker>`
-  — user-editable via datapack or KubeJS, namespace-compatible with DI's own tags.
+- 8 CTOV-specific entity tags under `domesticationinnovation:petshop_cage_<biome>`
+  (for the 8 non-vanilla biome families: `badlands`, `beach`, `bamboo`, `cherry`,
+  `jungle`, `mountains`, `mushroom`, `swamp`) — user-editable via datapack or KubeJS,
+  namespace-compatible with DI's own tags. Vanilla-aligned variants continue to use
+  DI's existing `petstore_cage_0..3` tags.
 - Optional data-driven spawn profiles (`ctov:petshop_profiles/<variant>/<marker>.json`)
   supporting per-entry `weight`, `baby`, `age` (including `age = -60000` for permanent
   babies).
@@ -33,7 +36,7 @@ Highlights:
 
 Full design docs: [`docs/DI_COMPAT_PETSHOP.md`](docs/DI_COMPAT_PETSHOP.md).
 
-## **Description**
+## Description
 
 ChoiceTheorem's Overhauled Village is a structure datapack packaged as a mod for Fabric,
 Forge, NeoForge and Quilt that enhances and creates new villages and pillager outpost
@@ -94,7 +97,7 @@ complementary reimagined shaders.
 ![](https://i.imgur.com/CpLSx3M.png)
 </details>
 
-## **Credits**
+## Credits
 
 - **ChoiceTheorem** — original CTOV mod, datapack design, village templates.
 - **Vichy0623** — codesigning the upstream builds.

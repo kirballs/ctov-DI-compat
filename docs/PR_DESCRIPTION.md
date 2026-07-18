@@ -29,13 +29,16 @@ animals spawn and chest loot table isn't bound.
 | `neoforge/.../WorldgenRegistry.java` | Registered `PETSHOP_COMPAT` via `DeferredRegister<StructurePoolElementType<?>>` (was missing). |
 | `neoforge/.../ctovNeo.java` | Wired `WorldgenRegistry.POOL_ELEMENTS.register(modEventBus)` to the mod event bus. |
 
-### Resources (108 files)
+### Resources (31 files)
 
 - **21 lithostitched modifier JSONs** — `element_type` switched from
   `minecraft:single_pool_element` to `ctov:petshop_compat`. Load conditions preserved.
-- **85 new CTOV entity tags** under `domesticationinnovation:petshop/ctov/<variant>/<marker>`
-  covering 17 non-vanilla variants × 5 markers. Vanilla-aligned variants intentionally get
-  no CTOV tag (fall through to DI base tags).
+- **8 new CTOV entity tags** under `domesticationinnovation:petshop_cage_<biome>`
+  covering the 8 non-vanilla biome families: `badlands`, `beach`, `bamboo`, `cherry`,
+  `jungle`, `mountains`, `mushroom`, `swamp`. Each tag may be shared by multiple CTOV
+  village variants that share the same biome theme (e.g. `mesa` and `mesa_fortified`
+  both map to `petshop_cage_badlands`). Vanilla-aligned variants continue to use DI's
+  existing `petstore_cage_0..3` tags.
 - **2 sample data-driven spawn profiles** at `ctov:petshop_profiles/<variant>/<marker>.json`
   demonstrating `weight`, `baby`, and `age=-60000` (permanent baby).
 
@@ -51,8 +54,8 @@ animals spawn and chest loot table isn't bound.
   plus two-line registrations in existing worldgen registries.
 - The 21 modifier JSONs have their `element_type` switched, but this only takes effect when
   `domesticationinnovation` / `rats` / `simplycats` is loaded (load conditions unchanged).
-- DI-owned tags (`petstore_cage_0..3`, `petstore_fishtank`) are **untouched**. Only new
-  tags under `domesticationinnovation:petshop/ctov/...` are introduced.
+- DI-owned tags (`petstore_cage_0..3`, `petstore_fishtank`) are **untouched**. Only 8 new
+  tags under `domesticationinnovation:petshop_cage_<biome>` are introduced.
 - Config defaults preserve stable gameplay:
   - `enableDiPetshopCompat = true`
   - `enableCtovPetshopTagResolution = true`
@@ -68,7 +71,7 @@ Manual verification performed (not automated — see "Known limitations" §6 in
 1. ✅ Sanity-checked all 4 modified Java files for syntax (brace/paren/bracket balance,
    no unclosed strings/comments).
 2. ✅ Verified all 21 modifier JSONs are valid JSON and now reference `ctov:petshop_compat`.
-3. ✅ Verified all 85 new tag files are valid JSON with `replace: false` and biome-appropriate
+3. ✅ Verified all 8 new tag files are valid JSON with `replace: false` and biome-appropriate
    entity lists.
 4. ✅ Verified both sample profile JSONs are valid and demonstrate `age=-60000`.
 5. ⚠️ **Not compiled in a dev environment** — the sandbox has no JDK. The maintainer should
