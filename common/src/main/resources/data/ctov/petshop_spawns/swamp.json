@@ -1,0 +1,10 @@
+{
+  "_doc": "Swamp petshop spawns. Applies to: swamp, swamp_fortified village variants.",
+  "replace": false,
+  "entries": [
+    { "entity": "minecraft:frog", "weight": 4, "baby": true },
+    { "entity": "minecraft:slime", "weight": 2, "baby": true },
+    { "entity": "minecraft:cat", "weight": 2, "baby": true },
+    { "entity": "minecraft:tropical_fish", "weight": 1 }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "_doc": "Snowy petshop spawns. Applies to: snowy_igloo, christmas village variants.",
+  "replace": false,
+  "entries": [
+    { "entity": "minecraft:fox", "weight": 4, "baby": true },
+    { "entity": "minecraft:rabbit", "weight": 3 },
+    { "entity": "minecraft:polar_bear", "weight": 2, "age": -60000 },
+    { "entity": "minecraft:stray", "weight": 1, "baby": true },
+    { "entity": "minecraft:wolf", "weight": 1, "baby": true }
+  ]
+}

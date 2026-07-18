@@ -1,9 +1,0 @@
-{
-	"replace": false,
-	"#comment": "Mushroom fields petshop cage — mushroom biome mobs. Used by CTOV mushroom variant.",
-	"values": [
-		"minecraft:mooshroom",
-		"minecraft:rabbit",
-		"minecraft:bat"
-	]
-}

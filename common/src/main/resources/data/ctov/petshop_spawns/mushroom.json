@@ -1,0 +1,9 @@
+{
+  "_doc": "Mushroom fields petshop spawns. Applies to: mushroom village variant.",
+  "replace": false,
+  "entries": [
+    { "entity": "minecraft:mooshroom", "weight": 5, "baby": true },
+    { "entity": "minecraft:cow", "weight": 1, "age": -60000 },
+    { "entity": "minecraft:bat", "weight": 2 }
+  ]
+}

@@ -1,9 +1,0 @@
-{
-	"replace": false,
-	"#comment": "Swamp petshop cage — wetland mobs. Shared by CTOV swamp and swamp_fortified variants.",
-	"values": [
-		"minecraft:frog",
-		"minecraft:rabbit",
-		"minecraft:cat"
-	]
-}

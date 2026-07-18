@@ -1,9 +1,0 @@
-{
-	"replace": false,
-	"#comment": "Bamboo jungle petshop cage — panda-friendly jungle mobs. Used by CTOV jungle_tree variant.",
-	"values": [
-		"minecraft:panda",
-		"minecraft:parrot",
-		"minecraft:ocelot"
-	]
-}

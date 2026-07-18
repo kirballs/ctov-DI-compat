@@ -1,0 +1,10 @@
+{
+  "_doc": "Beach / coast petshop spawns. Applies to: beach village variant.",
+  "replace": false,
+  "entries": [
+    { "entity": "minecraft:turtle", "weight": 4, "baby": true },
+    { "entity": "minecraft:parrot", "weight": 2 },
+    { "entity": "minecraft:cat", "weight": 2, "baby": true },
+    { "entity": "minecraft:pufferfish", "weight": 1 }
+  ]
+}

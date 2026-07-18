@@ -1,0 +1,11 @@
+{
+  "_doc": "Jungle petshop spawns. Applies to: jungle village variant.",
+  "replace": false,
+  "entries": [
+    { "entity": "minecraft:parrot", "weight": 4 },
+    { "entity": "minecraft:ocelot", "weight": 2, "baby": true },
+    { "entity": "minecraft:cat", "weight": 1, "age": -60000 },
+    { "entity": "minecraft:panda", "weight": 2, "baby": true },
+    { "entity": "minecraft:frog", "weight": 1 }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "_doc": "Badlands / mesa petshop spawns. Applies to: mesa, mesa_fortified village variants.",
+  "replace": false,
+  "entries": [
+    { "entity": "minecraft:armadillo", "weight": 4 },
+    { "entity": "minecraft:rabbit", "weight": 3 },
+    { "entity": "minecraft:bat", "weight": 2 },
+    { "entity": "minecraft:llama", "weight": 1, "age": -60000 }
+  ]
+}

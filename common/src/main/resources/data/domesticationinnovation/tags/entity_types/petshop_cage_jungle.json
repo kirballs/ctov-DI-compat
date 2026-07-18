@@ -1,9 +1,0 @@
-{
-	"replace": false,
-	"#comment": "Jungle petshop cage — tropical jungle mobs. Used by CTOV jungle variant.",
-	"values": [
-		"minecraft:parrot",
-		"minecraft:ocelot",
-		"minecraft:cat"
-	]
-}

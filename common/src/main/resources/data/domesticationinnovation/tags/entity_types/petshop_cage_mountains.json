@@ -1,9 +1,0 @@
-{
-	"replace": false,
-	"#comment": "Mountain petshop cage — highland mobs. Shared by CTOV mountain and mountain_alpine variants.",
-	"values": [
-		"minecraft:goat",
-		"minecraft:rabbit",
-		"minecraft:fox"
-	]
-}

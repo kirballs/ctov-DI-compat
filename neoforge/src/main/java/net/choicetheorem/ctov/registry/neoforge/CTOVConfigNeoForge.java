@@ -12,97 +12,91 @@ import java.util.List;
 
 @EventBusSubscriber(modid = CTOV.MOD_ID)
 public class CTOVConfigNeoForge {
-	public static ModConfigSpec COMMON_CONFIG;
-	public static final String CATEGORY_STRUCTURES = "structures";
-	public static final String CATEGORY_WEIGHTS = "weights";
-	public static final String CATEGORY_PETSHOP_COMPAT = "petshop_compat";
-	public static final ModConfigSpec.BooleanValue GENERATE_SMALL_VILLAGES;
-	public static final ModConfigSpec.BooleanValue GENERATE_MEDIUM_VILLAGES;
-	public static final ModConfigSpec.BooleanValue GENERATE_LARGE_VILLAGES;
-	public static final ModConfigSpec.BooleanValue GENERATE_PILLAGER_OUTPOST;
-	public static final ModConfigSpec.ConfigValue<List<? extends String>> ENABLED_VILLAGES;
-	public static final ModConfigSpec.ConfigValue<List<? extends String>> ENABLED_PILLAGER_OUTPOST;
-	public static final ModConfigSpec.IntValue SMALL_VILLAGE_WEIGHT;
-	public static final ModConfigSpec.IntValue MEDIUM_VILLAGE_WEIGHT;
-	public static final ModConfigSpec.IntValue LARGE_VILLAGE_WEIGHT;
-	public static final ModConfigSpec.IntValue OUTPOST_WEIGHT;
-	public static final ModConfigSpec.BooleanValue ENABLE_DI_PETSHOP_COMPAT;
-	public static final ModConfigSpec.BooleanValue ENABLE_CTOV_PETSHOP_TAG_RESOLUTION;
-	public static final ModConfigSpec.BooleanValue ENABLE_DI_PETSHOP_FALLBACK_TAGS;
-	public static final ModConfigSpec.BooleanValue ENABLE_PETSHOP_DEBUG_LOGGING;
-	public static final ModConfigSpec.BooleanValue FORCE_PETSHOP_BABY_SPAWNS;
-	public static final List<String> VILLAGE_POOL = List.of(
-		"beach", "christmas", "desert", "desert_oasis", "dark_forest",
-		"jungle", "jungle_tree", "mesa", "mesa_fortified", "mountain",
-		"mountain_alpine", "mushroom", "plains", "plains_fortified",
-		"savanna", "savanna_na", "snowy_igloo", "swamp",
-		"swamp_fortified", "taiga", "taiga_fortified");
-	public static final List<String> PILLAGER_OUTPOST_POOL = List.of(
-		"beach", "dark_forest", "desert", "jungle", "badlands", "mountain",
-		"plains", "savanna", "snowy", "swamp", "taiga");
-	static {
-		ModConfigSpec.Builder COMMON_BUILDER = new ModConfigSpec.Builder();
-		
-		COMMON_BUILDER.comment("Structure spawning").push(CATEGORY_STRUCTURES);
-		GENERATE_SMALL_VILLAGES = COMMON_BUILDER.comment("Should CTOV small village generates?")
-			.define("generatesmallVillage", true);
-		GENERATE_MEDIUM_VILLAGES = COMMON_BUILDER.comment("Should CTOV medium village generates?")
-			.define("generatemediumVillage", true);
-		GENERATE_LARGE_VILLAGES = COMMON_BUILDER.comment("Should CTOV large village generates?")
-			.define("generatelargeVillage", true);
-		GENERATE_PILLAGER_OUTPOST = COMMON_BUILDER.comment("Should CTOV Pillager Outpost generates?")
-			.define("generatePillagerOutpost", true);
-		ENABLED_VILLAGES = COMMON_BUILDER.comment("Which villages should generate")
-			.defineListAllowEmpty("enabledVillages",
-				VILLAGE_POOL,
-				obj -> obj instanceof String str && VILLAGE_POOL.contains(str)
-			);
-		ENABLED_PILLAGER_OUTPOST = COMMON_BUILDER.comment("Which pillager outpost should generates")
-			.defineListAllowEmpty("enabledpillageroutpost",
-				PILLAGER_OUTPOST_POOL,
-				obj -> obj instanceof String str && PILLAGER_OUTPOST_POOL.contains(str)
-			);
-		COMMON_BUILDER.pop();
-		
-		COMMON_BUILDER.comment("Structure spawning frequency").push(CATEGORY_WEIGHTS);
-		SMALL_VILLAGE_WEIGHT = COMMON_BUILDER.comment("CTOV small village spawn chances")
-			.defineInRange("smallVillageWeight", 10,0,Integer.MAX_VALUE);
-		MEDIUM_VILLAGE_WEIGHT = COMMON_BUILDER.comment("CTOV medium village spawn chance")
-			.defineInRange("mediumVillageWeight", 4,0,Integer.MAX_VALUE);
-		LARGE_VILLAGE_WEIGHT = COMMON_BUILDER.comment("CTOV large village spawn chance")
-			.defineInRange("largeVillageWeight", 1,0,Integer.MAX_VALUE);
-		OUTPOST_WEIGHT = COMMON_BUILDER.comment("CTOV Pillager Outpost spawn chance")
-			.defineInRange("PillagerOutpostWeight", 1,0,Integer.MAX_VALUE);
-		
-		COMMON_BUILDER.pop();
+        public static ModConfigSpec COMMON_CONFIG;
+        public static final String CATEGORY_STRUCTURES = "structures";
+        public static final String CATEGORY_WEIGHTS = "weights";
+        public static final String CATEGORY_PETSHOP_COMPAT = "petshop_compat";
+        public static final ModConfigSpec.BooleanValue GENERATE_SMALL_VILLAGES;
+        public static final ModConfigSpec.BooleanValue GENERATE_MEDIUM_VILLAGES;
+        public static final ModConfigSpec.BooleanValue GENERATE_LARGE_VILLAGES;
+        public static final ModConfigSpec.BooleanValue GENERATE_PILLAGER_OUTPOST;
+        public static final ModConfigSpec.ConfigValue<List<? extends String>> ENABLED_VILLAGES;
+        public static final ModConfigSpec.ConfigValue<List<? extends String>> ENABLED_PILLAGER_OUTPOST;
+        public static final ModConfigSpec.IntValue SMALL_VILLAGE_WEIGHT;
+        public static final ModConfigSpec.IntValue MEDIUM_VILLAGE_WEIGHT;
+        public static final ModConfigSpec.IntValue LARGE_VILLAGE_WEIGHT;
+        public static final ModConfigSpec.IntValue OUTPOST_WEIGHT;
+        public static final ModConfigSpec.BooleanValue ENABLE_DI_PETSHOP_COMPAT;
+        public static final ModConfigSpec.BooleanValue ENABLE_PETSHOP_DEBUG_LOGGING;
+        public static final ModConfigSpec.BooleanValue FORCE_PETSHOP_BABY_SPAWNS;
+        public static final List<String> VILLAGE_POOL = List.of(
+                "beach", "christmas", "desert", "desert_oasis", "dark_forest",
+                "jungle", "jungle_tree", "mesa", "mesa_fortified", "mountain",
+                "mountain_alpine", "mushroom", "plains", "plains_fortified",
+                "savanna", "savanna_na", "snowy_igloo", "swamp",
+                "swamp_fortified", "taiga", "taiga_fortified");
+        public static final List<String> PILLAGER_OUTPOST_POOL = List.of(
+                "beach", "dark_forest", "desert", "jungle", "badlands", "mountain",
+                "plains", "savanna", "snowy", "swamp", "taiga");
+        static {
+                ModConfigSpec.Builder COMMON_BUILDER = new ModConfigSpec.Builder();
+                
+                COMMON_BUILDER.comment("Structure spawning").push(CATEGORY_STRUCTURES);
+                GENERATE_SMALL_VILLAGES = COMMON_BUILDER.comment("Should CTOV small village generates?")
+                        .define("generatesmallVillage", true);
+                GENERATE_MEDIUM_VILLAGES = COMMON_BUILDER.comment("Should CTOV medium village generates?")
+                        .define("generatemediumVillage", true);
+                GENERATE_LARGE_VILLAGES = COMMON_BUILDER.comment("Should CTOV large village generates?")
+                        .define("generatelargeVillage", true);
+                GENERATE_PILLAGER_OUTPOST = COMMON_BUILDER.comment("Should CTOV Pillager Outpost generates?")
+                        .define("generatePillagerOutpost", true);
+                ENABLED_VILLAGES = COMMON_BUILDER.comment("Which villages should generate")
+                        .defineListAllowEmpty("enabledVillages",
+                                VILLAGE_POOL,
+                                obj -> obj instanceof String str && VILLAGE_POOL.contains(str)
+                        );
+                ENABLED_PILLAGER_OUTPOST = COMMON_BUILDER.comment("Which pillager outpost should generates")
+                        .defineListAllowEmpty("enabledpillageroutpost",
+                                PILLAGER_OUTPOST_POOL,
+                                obj -> obj instanceof String str && PILLAGER_OUTPOST_POOL.contains(str)
+                        );
+                COMMON_BUILDER.pop();
+                
+                COMMON_BUILDER.comment("Structure spawning frequency").push(CATEGORY_WEIGHTS);
+                SMALL_VILLAGE_WEIGHT = COMMON_BUILDER.comment("CTOV small village spawn chances")
+                        .defineInRange("smallVillageWeight", 10,0,Integer.MAX_VALUE);
+                MEDIUM_VILLAGE_WEIGHT = COMMON_BUILDER.comment("CTOV medium village spawn chance")
+                        .defineInRange("mediumVillageWeight", 4,0,Integer.MAX_VALUE);
+                LARGE_VILLAGE_WEIGHT = COMMON_BUILDER.comment("CTOV large village spawn chance")
+                        .defineInRange("largeVillageWeight", 1,0,Integer.MAX_VALUE);
+                OUTPOST_WEIGHT = COMMON_BUILDER.comment("CTOV Pillager Outpost spawn chance")
+                        .defineInRange("PillagerOutpostWeight", 1,0,Integer.MAX_VALUE);
+                
+                COMMON_BUILDER.pop();
 
-		COMMON_BUILDER.comment("DI petshop compatibility").push(CATEGORY_PETSHOP_COMPAT);
-		ENABLE_DI_PETSHOP_COMPAT = COMMON_BUILDER.comment("Enable CTOV compatibility handling for DI petshop spawns")
-			.define("enableDiPetshopCompat", true);
-		ENABLE_CTOV_PETSHOP_TAG_RESOLUTION = COMMON_BUILDER.comment("Enable CTOV-specific petshop semantic tag resolution")
-			.define("enableCtovPetshopTagResolution", true);
-		ENABLE_DI_PETSHOP_FALLBACK_TAGS = COMMON_BUILDER.comment("Enable fallback to DI petshop tags when CTOV tags are unresolved")
-			.define("enableDiPetshopFallbackTags", true);
-		ENABLE_PETSHOP_DEBUG_LOGGING = COMMON_BUILDER.comment("Enable debug logging for petshop compat marker and spawn resolution")
-			.define("enablePetshopDebugLogging", false);
-		FORCE_PETSHOP_BABY_SPAWNS = COMMON_BUILDER.comment("Force ageable spawned mobs to baby state")
-			.define("forcePetshopBabySpawns", false);
-		COMMON_BUILDER.pop();
-		
-		COMMON_CONFIG = COMMON_BUILDER.build();
-	}
-	
-	@SubscribeEvent
-	public static void onLoad(final ModConfigEvent event) {
-		if (event.getConfig().getSpec() == COMMON_CONFIG) {
-		
-		}
-	}
-	
-	@SubscribeEvent
-	public static void onReload(final ModConfigEvent event) {
-		if (event.getConfig().getSpec() == COMMON_CONFIG) {
-		
-		}
-	}
+                COMMON_BUILDER.comment("DI petshop compatibility").push(CATEGORY_PETSHOP_COMPAT);
+                ENABLE_DI_PETSHOP_COMPAT = COMMON_BUILDER.comment("Enable CTOV compatibility handling for DI petshop spawns")
+                        .define("enableDiPetshopCompat", true);
+                ENABLE_PETSHOP_DEBUG_LOGGING = COMMON_BUILDER.comment("Enable debug logging for petshop compat marker and spawn resolution")
+                        .define("enablePetshopDebugLogging", false);
+                FORCE_PETSHOP_BABY_SPAWNS = COMMON_BUILDER.comment("Force ageable spawned mobs to baby state")
+                        .define("forcePetshopBabySpawns", false);
+                COMMON_BUILDER.pop();
+                
+                COMMON_CONFIG = COMMON_BUILDER.build();
+        }
+        
+        @SubscribeEvent
+        public static void onLoad(final ModConfigEvent event) {
+                if (event.getConfig().getSpec() == COMMON_CONFIG) {
+                
+                }
+        }
+        
+        @SubscribeEvent
+        public static void onReload(final ModConfigEvent event) {
+                if (event.getConfig().getSpec() == COMMON_CONFIG) {
+                
+                }
+        }
 }

@@ -1,0 +1,10 @@
+{
+  "_doc": "Cherry grove petshop spawns. Reserved — no current CTOV variant maps to this biome. Provided for future variants or for users who want to remap a variant to cherry via a custom ResourceLocation override.",
+  "replace": false,
+  "entries": [
+    { "entity": "minecraft:bee", "weight": 4 },
+    { "entity": "minecraft:rabbit", "weight": 2 },
+    { "entity": "minecraft:fox", "weight": 2, "baby": true },
+    { "entity": "minecraft:cat", "weight": 1, "baby": true }
+  ]
+}

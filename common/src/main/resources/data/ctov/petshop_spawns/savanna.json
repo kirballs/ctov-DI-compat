@@ -1,0 +1,12 @@
+{
+  "_doc": "Savanna petshop spawns. Applies to: savanna, savanna_na village variants.",
+  "replace": false,
+  "entries": [
+    { "entity": "minecraft:ocelot", "weight": 3, "baby": true },
+    { "entity": "minecraft:parrot", "weight": 3 },
+    { "entity": "minecraft:horse", "weight": 2, "age": -60000 },
+    { "entity": "minecraft:donkey", "weight": 1, "baby": true },
+    { "entity": "minecraft:llama", "weight": 1, "age": -60000 },
+    { "entity": "minecraft:armadillo", "weight": 2 }
+  ]
+}

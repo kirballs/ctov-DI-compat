@@ -1,0 +1,10 @@
+{
+  "_doc": "Mountain petshop spawns. Applies to: mountain, mountain_alpine village variants.",
+  "replace": false,
+  "entries": [
+    { "entity": "minecraft:goat", "weight": 4, "baby": true },
+    { "entity": "minecraft:llama", "weight": 2, "age": -60000 },
+    { "entity": "minecraft:fox", "weight": 2, "baby": true },
+    { "entity": "minecraft:rabbit", "weight": 1 }
+  ]
+}

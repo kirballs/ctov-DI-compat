@@ -1,9 +1,0 @@
-{
-	"replace": false,
-	"#comment": "Badlands / mesa petshop cage — arid badlands biome mobs. Shared by CTOV mesa and mesa_fortified variants.",
-	"values": [
-		"minecraft:armadillo",
-		"minecraft:rabbit",
-		"minecraft:bat"
-	]
-}

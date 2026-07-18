@@ -1,0 +1,14 @@
+{
+  "_doc": "Plains / taiga petshop spawns. Applies to: plains, plains_fortified, taiga, taiga_fortified, halloween village variants. Used for every cage marker (petshop_cage_0..3) in those villages.",
+  "replace": false,
+  "entries": [
+    { "entity": "minecraft:rabbit", "weight": 4 },
+    { "entity": "minecraft:fox", "weight": 2, "baby": true },
+    { "entity": "minecraft:cat", "weight": 2, "baby": true },
+    { "entity": "minecraft:horse", "weight": 1, "age": -60000 },
+    { "entity": "minecraft:cow", "weight": 1, "age": -60000 },
+    { "entity": "minecraft:sheep", "weight": 1 },
+    { "entity": "minecraft:pig", "weight": 1 },
+    { "entity": "minecraft:chicken", "weight": 1 }
+  ]
+}

@@ -65,110 +65,44 @@ PetshopCompatStructurePoolElement.handleDataMarker()
         └─ petshop_cage_3  → spawn 1 cage mob
         │
         ▼
-Per-village tag resolution:
-  1. Primary tag (per-village biome tag, see §3 below)
-  2. Optional profile JSON (ctov:petshop_profiles/<variant>/<marker>.json)
-  3. DI fallback tag (petstore_cage_0 — safe default for non-vanilla variants)
-  4. Safe failure — log + clear marker, no spawn, no crash
+Spawn list lookup:
+  1. Resolve variant → biome name (e.g. plains, jungle, swamp — see §3 below)
+  2. For petshop_water marker, use biome = "fishtank"
+  3. Load ctov:petshop_spawns/<biome>.json
+  4. Pick N entities via weighted random selection (N from spawn count table)
+  5. If file missing or empty → no spawn, marker cleared to AIR, debug log records reason
 ```
 
-## 3. Tag scheme (per-village, per user spec)
+## 3. Spawn-list scheme (per-village, unified JSON)
 
-### Vanilla-aligned variants — use DI's original numbered tags
+Every CTOV village variant maps to **one biome name**, which selects **one JSON file** at
+`data/ctov/petshop_spawns/<biome>.json`. All cage markers in a given variant use the same JSON.
+The fishtank marker uses a separate shared `fishtank.json` regardless of variant.
 
-These variants share DI's existing tags. All cage markers in a given variant use the **same**
-tag (per-village theming), unlike DI's per-marker behavior.
+### Variant → biome mapping
 
-| Variants | Cage tag (all markers) | Biome theme |
+| CTOV variant | Biome name | Spawn-list file |
 |---|---|---|
-| `plains`, `plains_fortified`, `taiga`, `taiga_fortified`, `halloween` | `domesticationinnovation:petstore_cage_0` | plains/taiga |
-| `desert`, `desert_oasis` | `domesticationinnovation:petstore_cage_1` | desert |
-| `snowy_igloo`, `christmas` | `domesticationinnovation:petstore_cage_2` | snowy |
-| `savanna`, `savanna_na` | `domesticationinnovation:petstore_cage_3` | savanna |
+| `plains`, `plains_fortified`, `taiga`, `taiga_fortified`, `halloween` | `plains` | `ctov:petshop_spawns/plains.json` |
+| `desert`, `desert_oasis` | `desert` | `ctov:petshop_spawns/desert.json` |
+| `snowy_igloo`, `christmas` | `snowy` | `ctov:petshop_spawns/snowy.json` |
+| `savanna`, `savanna_na` | `savanna` | `ctov:petshop_spawns/savanna.json` |
+| `beach` | `beach` | `ctov:petshop_spawns/beach.json` |
+| `jungle` | `jungle` | `ctov:petshop_spawns/jungle.json` |
+| `jungle_tree` | `bamboo` | `ctov:petshop_spawns/bamboo.json` |
+| `mesa`, `mesa_fortified` | `badlands` | `ctov:petshop_spawns/badlands.json` |
+| `mountain`, `mountain_alpine` | `mountains` | `ctov:petshop_spawns/mountains.json` |
+| `mushroom` | `mushroom` | `ctov:petshop_spawns/mushroom.json` |
+| `swamp`, `swamp_fortified` | `swamp` | `ctov:petshop_spawns/swamp.json` |
+| (reserved, no current variant) | `cherry` | `ctov:petshop_spawns/cherry.json` |
+| All variants (for `petshop_water` marker) | `fishtank` | `ctov:petshop_spawns/fishtank.json` |
 
-### Non-vanilla variants — use new CTOV biome tags
-
-These variants use new flat tags under the `domesticationinnovation` namespace. All cage markers
-in a given variant use the same biome tag.
-
-| Variants | Cage tag (all markers) | Biome theme |
-|---|---|---|
-| `beach` | `domesticationinnovation:petshop_cage_beach` | beach / coast |
-| `jungle` | `domesticationinnovation:petshop_cage_jungle` | jungle |
-| `jungle_tree` | `domesticationinnovation:petshop_cage_bamboo` | bamboo jungle |
-| `mesa`, `mesa_fortified` | `domesticationinnovation:petshop_cage_badlands` | badlands / mesa |
-| `mountain`, `mountain_alpine` | `domesticationinnovation:petshop_cage_mountains` | mountains |
-| `mushroom` | `domesticationinnovation:petshop_cage_mushroom` | mushroom fields |
-| `swamp`, `swamp_fortified` | `domesticationinnovation:petshop_cage_swamp` | swamp |
-
-### Fishtank marker
-
-All variants use `domesticationinnovation:petstore_fishtank` for the `petshop_water` marker.
-
-### Reserved tag (no current variant)
-
-| Tag | Status |
-|---|---|
-| `domesticationinnovation:petshop_cage_cherry` | Created with sensible defaults (cat/rabbit/bee). No current CTOV variant maps to it — available for future variants or user customization via datapack. |
-
-### DI-owned tags — UNCHANGED
-
-The following tags are owned by DI and **must not be renamed, moved, or modified** by CTOV:
-
-- `domesticationinnovation:petstore_fishtank`
-- `domesticationinnovation:petstore_cage_0`
-- `domesticationinnovation:petstore_cage_1`
-- `domesticationinnovation:petstore_cage_2`
-- `domesticationinnovation:petstore_cage_3`
-
-CTOV references these tags by ID at runtime; users can extend them via their own datapacks as
-they always could.
-
-## 4. Customizing via datapack / KubeJS
-
-### Add an entity to a CTOV biome tag
-
-Drop a datapack at `<world>/datapacks/<your_pack>/data/domesticationinnovation/tags/entity_types/petshop_cage_jungle.json`:
+### Spawn-list JSON format
 
 ```json
 {
+  "_doc": "Optional human-readable description. Ignored by code.",
   "replace": false,
-  "values": [
-    "minecraft:parrot",
-    "minecraft:ocelot",
-    "minecraft:allay"
-  ]
-}
-```
-
-- `"replace": false` (default in our shipped files) — appends to existing entries.
-- `"replace": true` — completely overrides the shipped list.
-
-KubeJS equivalent (in `server_scripts`):
-
-```js
-ServerEvents.tags('entity_type', event => {
-  event.add('domesticationinnovation:petshop_cage_jungle', 'minecraft:allay')
-  event.add('domesticationinnovation:petshop_cage_swamp', 'minecraft:frog')
-})
-```
-
-### Add a brand-new biome tag
-
-Just create the tag file at
-`data/domesticationinnovation/tags/entity_types/petshop_cage_<your_biome>.json` — the CTOV
-compat layer will pick it up if you map a variant to it via a profile override (see below).
-
-### Profile-based spawn overrides (weight, baby, age, tag override)
-
-For finer control (weighted picks, baby/age flags, or overriding which tag a variant uses),
-drop a profile JSON at
-`<world>/datapacks/<your_pack>/data/ctov/petshop_profiles/<variant>/<marker>.json`:
-
-```json
-{
-  "ctov_tag": "domesticationinnovation:petshop_cage_jungle",
-  "di_fallback_tag": "domesticationinnovation:petstore_cage_0",
   "entries": [
     { "entity": "minecraft:parrot", "weight": 4 },
     { "entity": "minecraft:ocelot", "weight": 2, "baby": true },
@@ -177,38 +111,77 @@ drop a profile JSON at
 }
 ```
 
-When a profile is present, its `entries` are used as the second resolution layer (between the
-primary tag and the DI fallback tag). Profile fields:
+Fields:
 
 | Field | Type | Required | Meaning |
 |---|---|---|---|
-| `ctov_tag` | resource location | no | Override the primary tag ID (defaults to the per-village biome tag) |
-| `di_fallback_tag` | resource location | no | Override the DI fallback tag ID (defaults to `petstore_cage_0` for non-vanilla variants, null for vanilla-aligned) |
-| `entries[].entity` | resource location | yes | Entity type to spawn |
-| `entries[].weight` | int | no (default 1) | Weighted pick weight |
-| `entries[].baby` | bool | no | If true and entity is AgeableMob, call `setBaby(true)` |
-| `entries[].age` | int | no | If set and entity is AgeableMob, call `setAge(value)`. **May be negative** — `age = -60000` produces a permanent baby that will never age up. |
+| `_doc` | string | no | Human-readable note. Ignored by code. |
+| `replace` | bool | no (default false) | Currently informational only — same JSON file always replaces the previous list for that biome. Reserved for future merge semantics. |
+| `entries[].entity` | resource location | yes | Entity type to spawn (e.g. `minecraft:parrot`) |
+| `entries[].weight` | int | no (default 1) | Weighted-pick weight. Must be > 0. |
+| `entries[].baby` | bool | no | If true and entity is `AgeableMob`, call `setBaby(true)`. Ignored if `age` is set. |
+| `entries[].age` | int | no | If set and entity is `AgeableMob`, call `setAge(value)`. **May be negative** — see §6 for full semantics. |
 
-If `age` is specified, `baby` is ignored (age takes precedence). Non-AgeableMob entities
-(parrot, tropical_fish, etc.) safely ignore both fields.
+Unknown entity IDs are skipped with a debug log line (no crash). Non-`AgeableMob` entities
+(parrot, tropical_fish, pufferfish, etc.) safely ignore `baby` and `age`.
 
-## 5. Fallback resolution order
+### What about DI's own tags?
 
-At spawn time, for each `(variant, marker)` pair, the CTOV compat layer tries in order:
+DI's own entity tags (`domesticationinnovation:petstore_cage_0..3`, `petstore_fishtank`) are
+**not used** by CTOV's compat layer. They still exist and DI still uses them for any
+DI-placed petshops (i.e. vanilla villages), but CTOV's petshops read exclusively from the
+`ctov:petshop_spawns/` JSON files. Users who want to affect both CTOV and DI petshops in the
+same world will need to edit both DI's tags and CTOV's JSON files. In a modpack where DI's
+vanilla tags are overridden or removed, only the CTOV JSON files matter.
 
-1. **Primary tag** — the per-village biome tag (see §3)
-   - Skipped if `enableCtovPetshopTagResolution = false` in config.
-   - Skipped silently if the tag exists but is empty.
-2. **Profile entries** — `ctov:petshop_profiles/<variant>/<marker>.json` `entries[]`
-   - Only consulted if step 1 yielded no entries.
-3. **DI fallback tag** — `domesticationinnovation:petstore_cage_0` (plains/taiga pets)
-   - Only consulted for cage markers in **non-vanilla** variants (vanilla-aligned variants
-     already used the DI tag as their primary tag in step 1).
-   - Skipped if `enableDiPetshopFallbackTags = false` in config.
-4. **Safe failure** — marker is cleared (block → AIR), `[CTOV-DI-Compat]` debug log records
-   the reason. No crash, no spawn.
+## 4. Customizing via datapack / KubeJS
 
-Spawn counts per marker (matches DI's `PetshopStructurePoolElement.handleDataMarker`):
+### Edit an existing biome's spawn list
+
+Drop a datapack at
+`<world>/datapacks/<your_pack>/data/ctov/petshop_spawns/jungle.json` with your replacement:
+
+```json
+{
+  "_doc": "My custom jungle petshop — only parrots and pandas, with babies",
+  "replace": false,
+  "entries": [
+    { "entity": "minecraft:parrot", "weight": 5 },
+    { "entity": "minecraft:panda", "weight": 3, "baby": true },
+    { "entity": "minecraft:ocelot", "weight": 1, "age": -60000 }
+  ]
+}
+```
+
+Datapack resources override mod-bundled resources of the same `namespace:path` — your file at
+`data/ctov/petshop_spawns/jungle.json` will replace the shipped file. Reload with `/reload`.
+
+KubeJS equivalent (in `server_scripts`):
+
+```js
+ServerEvents.highPriorityData(event => {
+  event.addJson('ctov:petshop_spawns/jungle.json', {
+    _doc: 'My custom jungle petshop — only parrots and pandas, with babies',
+    replace: false,
+    entries: [
+      { entity: 'minecraft:parrot', weight: 5 },
+      { entity: 'minecraft:panda', weight: 3, baby: true },
+      { entity: 'minecraft:ocelot', weight: 1, age: -60000 }
+    ]
+  })
+})
+```
+
+### Add a brand-new biome spawn list
+
+Just create the file at `data/ctov/petshop_spawns/<your_biome>.json`. To actually use it,
+you'd need to also remap a CTOV variant to that biome name — currently the variant → biome
+mapping is hardcoded in `PetshopCompatStructurePoolElement.variantToBiome()`. Fork the mod
+and edit that switch statement, or submit a PR adding your variant.
+
+## 5. Spawn count per marker
+
+Spawn counts match DI's `PetshopStructurePoolElement.handleDataMarker` exactly:
 
 | Marker | Count |
 |---|---|
@@ -220,13 +193,32 @@ Spawn counts per marker (matches DI's `PetshopStructurePoolElement.handleDataMar
 
 ## 6. Baby / age field behavior
 
-| Entity type | `baby: true` | `age: N` (positive) | `age: -60000` |
+The `age` field follows vanilla `AgeableMob.setAge(int)` semantics:
+
+| `age` value | Effect |
+|---|---|
+| Positive (`age > 0`) | Spawn as adult; can't breed for `age` ticks (breeding cooldown) |
+| `0` | Spawn as adult (default state) |
+| Negative (`age < 0`) | Spawn as baby; grows up when age timer reaches 0 |
+| More negative (e.g. `-60000`) | Spawn as baby for a longer time (~50 in-game hours / ~3 real-time hours at 20 TPS) |
+| `Integer.MIN_VALUE` (`-2147483648`) | Effectively permanent baby — would take ~3 real-time years to age up |
+
+The `baby: true` shortcut is equivalent to a small negative age (the mob ages up within ~20
+minutes). It's a convenience for "spawn as baby that grows up reasonably soon". Use explicit
+`age` when you want fine control over how long the baby state lasts.
+
+Design intent (per maintainer): the long-baby feature exists so players can find baby animals
+in petshops and spend meaningful time with them before they grow up. `age = -60000` is the
+shipped default for "memorable but not permanent" babies; bump it to `-200000` or
+`Integer.MIN_VALUE` in your datapack if you want even longer baby state.
+
+| Entity type | `baby: true` | `age: N` (positive) | `age: -N` (negative) |
 |---|---|---|---|
-| `AgeableMob` (cat, wolf, rabbit, fox, goat, …) | `setBaby(true)` — grows up over time | `setAge(N)` — grows up after N ticks | `setAge(-60000)` — **permanent baby** (age timer stays far below 0, never reaches the grow-up threshold) |
+| `AgeableMob` (cat, wolf, rabbit, fox, goat, …) | `setBaby(true)` — grows up in ~20 min | `setAge(N)` — breeding cooldown | `setAge(-N)` — baby for N ticks |
 | Non-`AgeableMob` (parrot, tropical_fish, pufferfish, …) | Ignored safely | Ignored safely | Ignored safely |
 
 `forcePetshopBabySpawns = true` in config overrides every spawn to baby-state (unless an
-explicit `age` was given in the profile entry).
+explicit `age` was given in the spawn-list entry).
 
 ## 7. Config reference
 
@@ -236,10 +228,12 @@ in `ctov-common.toml`). Defaults preserve stable gameplay.
 | Option | Type | Default | Effect |
 |---|---|---|---|
 | `enableDiPetshopCompat` | bool | `true` | Master switch. If false, all `petshop_*` markers are cleared to AIR and no animals spawn. Chest loot table is also not bound. |
-| `enableCtovPetshopTagResolution` | bool | `true` | If false, skip resolution layer 1 (primary tag). Useful for debugging or when you want to force profile-only / DI fallback behavior. |
-| `enableDiPetshopFallbackTags` | bool | `true` | If false, skip resolution layer 3 (DI fallback tag). Useful if you want to require CTOV tags to be defined explicitly. |
-| `enablePetshopDebugLogging` | bool | `false` | If true, log every marker resolution: `marker=... variant=... primaryTag=... fallbackTag=... entries=N reason=...` and every spawn: `marker=... entity=... baby=... age=...`. |
-| `forcePetshopBabySpawns` | bool | `false` | If true, every spawned AgeableMob is forced to baby-state (unless the profile entry sets an explicit `age`). |
+| `enablePetshopDebugLogging` | bool | `false` | If true, log every marker resolution: `marker=... variant=... biome=... entries=N file=ctov:petshop_spawns/<biome>.json` and every spawn: `marker=... entity=... baby=... age=...`. |
+| `forcePetshopBabySpawns` | bool | `false` | If true, every spawned AgeableMob is forced to baby-state (unless the spawn-list entry sets an explicit `age`). |
+
+(Previous versions had `enableCtovPetshopTagResolution` and `enableDiPetshopFallbackTags`
+options — these have been removed because the new single-file resolution model has no
+layers to toggle.)
 
 ## 8. Test checklist (manual / integration)
 
@@ -249,26 +243,25 @@ in `ctov-common.toml`). Defaults preserve stable gameplay.
    desert_oasis, jungle, jungle_tree, mesa, mesa_fortified, mountain, mountain_alpine, mushroom,
    plains_fortified, savanna_na, swamp, swamp_fortified, taiga_fortified. Verify each spawns
    biome-appropriate animals.
-3. **Primary tag resolution** — set `enablePetshopDebugLogging = true`; verify log lines show
-   `primaryTag=domesticationinnovation:petshop_cage_<biome>` for non-vanilla variants and
-   `primaryTag=domesticationinnovation:petstore_cage_N` for vanilla-aligned variants.
-4. **DI fallback tag** — temporarily move a CTOV biome tag file out of the datapack dir;
-   verify the log shows `reason=di fallback` and animals still spawn (using `petstore_cage_0`
-   as the safe default).
+3. **Spawn-list file lookup** — set `enablePetshopDebugLogging = true`; verify log lines show
+   `biome=<biome_name>` and `file=ctov:petshop_spawns/<biome_name>.json` for each marker.
+4. **Missing-file safety** — temporarily rename a shipped JSON (e.g. move `jungle.json` out of
+   the datapack dir); verify the log shows `spawn list not found: ctov:petshop_spawns/jungle.json`
+   and no animals spawn (no crash, marker cleared to AIR).
 5. **Animals actually spawn** (not just chest loot) — open the world, find a petshop, count
-   mobs in each cage. If `enablePetshopDebugLogging = true`, the log records each `spawned
-   marker=... entity=...` line.
-6. **`age = -60000` permanent baby** — add a profile entry with `age: -60000` for an
-   AgeableMob; verify the spawned mob stays baby indefinitely (wait > 1 in-game day).
+   mobs in each cage. If `enablePetshopDebugLogging = true`, the log records each
+   `spawned marker=... entity=...` line.
+6. **`age = -60000` long baby** — add a spawn-list entry with `age: -60000` for an AgeableMob;
+   verify the spawned mob stays baby for at least 2 in-game days, then ages up.
 7. **Non-ageable safety** — set `baby: true` and `age: -60000` on a `minecraft:parrot` entry;
    verify no exception is logged and the parrot spawns normally.
 8. **DI-loaded vs DI-not-loaded** — repeat test 1 with DI loaded (animals spawn, chest loot
    binds) and without DI loaded (petshop structures may still appear from `rats` /
    `simplycats` load conditions, but no animals spawn and chest stays empty — no crash).
-9. **Datapack entity additions** — drop a datapack that adds `minecraft:allay` to
-   `domesticationinnovation:petshop_cage_jungle`. Reload datapacks (`/reload`). Generate a new
-   jungle village. Verify allays can spawn in the cage.
-10. **KubeJS additions** — same as 9 but via `ServerEvents.tags('entity_type', ...)`.
+9. **Datapack entity additions** — drop a datapack that overrides
+   `ctov:petshop_spawns/jungle.json` with a custom list including `minecraft:allay`. Reload
+   datapacks (`/reload`). Generate a new jungle village. Verify allays can spawn in the cage.
+10. **KubeJS additions** — same as 9 but via `ServerEvents.highPriorityData(...)`.
 
 ## 9. Files changed
 
@@ -276,25 +269,22 @@ in `ctov-common.toml`). Defaults preserve stable gameplay.
 
 | File | Change |
 |---|---|
-| `common/src/main/java/net/choicetheorem/ctov/CTOV.java` | Added `LOGGER` field (already in Copilot's first pass). |
-| `common/src/main/java/net/choicetheorem/ctov/platform/CTOVConfigHelper.java` | Added 5 `@ExpectPlatform` config methods for petshop compat. |
-| `common/src/main/java/net/choicetheorem/ctov/worldgen/processor/PetshopCompatStructurePoolElement.java` | New — the CTOV-side petshop compat element. Handles `petshop_water/chest/cage_0..3` markers. Per-village tag resolution with `variantToCageBiome` + `cageBiomeToTag` mapping. Three-layer resolution (primary tag → profile → DI fallback). |
-| `fabric/src/main/java/net/choicetheorem/ctov/platform/fabric/CTOVConfigHelperImpl.java` | Config impls for the 5 new options. |
-| `fabric/src/main/java/net/choicetheorem/ctov/registry/fabric/CTOVConfigFabric.java` | Added `PetshopCompat` config section. |
-| `fabric/src/main/java/net/choicetheorem/ctov/registry/fabric/worldgen/WorldgenRegistry.java` | Registered `PETSHOP_COMPAT` pool element type. |
-| `neoforge/src/main/java/net/choicetheorem/ctov/platform/neoforge/CTOVConfigHelperImpl.java` | Config impls for the 5 new options. |
-| `neoforge/src/main/java/net/choicetheorem/ctov/registry/neoforge/CTOVConfigNeoForge.java` | Added `petshop_compat` config category. |
-| `neoforge/src/main/java/net/choicetheorem/ctov/registry/neoforge/worldgen/WorldgenRegistry.java` | Registered `PETSHOP_COMPAT` pool element type via `DeferredRegister`. |
-| `neoforge/src/main/java/net/choicetheorem/ctov/neoforge/ctovNeo.java` | Wired `POOL_ELEMENTS` register to the mod event bus. |
+| `common/src/main/java/net/choicetheorem/ctov/worldgen/processor/PetshopCompatStructurePoolElement.java` | Rewritten. Single JSON-file lookup (`ctov:petshop_spawns/<biome>.json`) replaces the previous 3-layer tag → profile → DI-fallback resolution. `variantToBiome()` maps variant → biome name; `markerToBiome()` handles the fishtank special case. `age` field documented correctly (long-lasting baby, not "permanent"). |
+| `common/src/main/java/net/choicetheorem/ctov/platform/CTOVConfigHelper.java` | Removed `enableCtovPetshopTagResolution` and `enableDiPetshopFallbackTags` (no longer applicable). |
+| `fabric/src/main/java/net/choicetheorem/ctov/platform/fabric/CTOVConfigHelperImpl.java` | Removed the two unused config methods. |
+| `fabric/src/main/java/net/choicetheorem/ctov/registry/fabric/CTOVConfigFabric.java` | Removed the two unused config fields. |
+| `fabric/src/main/java/net/choicetheorem/ctov/registry/fabric/worldgen/WorldgenRegistry.java` | Registered `PETSHOP_COMPAT` pool element type (unchanged from prior commit). |
+| `neoforge/src/main/java/net/choicetheorem/ctov/platform/neoforge/CTOVConfigHelperImpl.java` | Removed the two unused config methods. |
+| `neoforge/src/main/java/net/choicetheorem/ctov/registry/neoforge/CTOVConfigNeoForge.java` | Removed the two unused config specs. |
+| `neoforge/src/main/java/net/choicetheorem/ctov/registry/neoforge/worldgen/WorldgenRegistry.java` | Registered `PETSHOP_COMPAT` pool element type (unchanged from prior commit). |
+| `neoforge/src/main/java/net/choicetheorem/ctov/neoforge/ctovNeo.java` | Wired `POOL_ELEMENTS` register to the mod event bus (unchanged from prior commit). |
 
 ### Resources
 
 | Path | Change |
 |---|---|
 | `common/src/main/resources/data/ctov/lithostitched/worldgen_modifier/domesticationinnovation/*.json` (21 files) | `element_type` switched from `minecraft:single_pool_element` to `ctov:petshop_compat`. Load conditions preserved. |
-| `common/src/main/resources/data/domesticationinnovation/tags/entity_types/petshop_cage_<biome>.json` (8 new files) | New CTOV biome tags: `badlands, beach, bamboo, cherry, jungle, mountains, mushroom, swamp`. Under the `domesticationinnovation` namespace per task §3. |
-| `common/src/main/resources/data/ctov/petshop_profiles/jungle/petshop_cage_3.json` (new) | Sample data-driven spawn profile demonstrating `weight`, `baby`, `age=-60000`. |
-| `common/src/main/resources/data/ctov/petshop_profiles/swamp/petshop_water.json` (new) | Sample data-driven spawn profile for aquatic mobs. |
+| `common/src/main/resources/data/ctov/petshop_spawns/<biome>.json` (13 new files) | Unified spawn-list JSONs: `plains`, `desert`, `snowy`, `savanna`, `badlands`, `beach`, `bamboo`, `cherry`, `jungle`, `mountains`, `mushroom`, `swamp`, `fishtank`. Each contains biome-appropriate entity list with `weight`, `baby`, `age` fields. |
 
 ### Docs
 
@@ -321,20 +311,26 @@ in `ctov-common.toml`). Defaults preserve stable gameplay.
    element handles this gracefully (no entities spawn if DI isn't loaded), but the chest
    loot table binding will silently fail (chest stays empty) when only `rats` or
    `simplycats` is loaded. Pre-existing behavior — not made worse by this change.
-4. **DI's petshop tags are static-cached.** DI caches `fishtankMobs` / `cageNMobs` arrays
-   once per `initializedMobLists` flag and never refreshes. CTOV's compat layer re-resolves
-   tags on every spawn, so it picks up datapack reloads correctly. This is strictly better
-   than DI's behavior, but means CTOV and DI can briefly disagree on entity lists if a
-   datapack is reloaded mid-world — DI will keep using the stale cache until restart.
+4. **Single source of truth: CTOV JSON files.** CTOV's petshop spawns are controlled
+   exclusively by the 13 `ctov:petshop_spawns/*.json` files. DI's own
+   `petstore_cage_0..3` / `petstore_fishtank` tags are not consulted. If a modpack wants
+   both CTOV and DI vanilla petshops to use the same entity lists, the user must edit both
+   CTOV's JSON files and DI's tags. In practice, modpacks that ship this fork typically
+   override or remove DI's vanilla tags anyway, so only CTOV's JSON files matter.
 5. **Per-village theming differs from DI's per-marker behavior.** DI's
    `PetshopStructurePoolElement` uses a different tag per cage marker
    (`cage_0` → `petstore_cage_0`, `cage_1` → `petstore_cage_1`, …), giving every vanilla
-   petshop a multi-biome zoo layout. CTOV's compat layer uses ONE tag per village variant
-   (all cage markers in a plains village use `petstore_cage_0`, etc.), giving CTOV petshops
-   a single-biome theme. This matches the user's requested design but means CTOV and DI
-   petshops in the same world will have visibly different cage populations.
-6. **Profile JSON `_doc` field.** The leading `_doc` key in profile JSONs is not read by
-   code — it's a documentation convention. The parser ignores unknown keys, so it's safe.
-   Same for the `#comment` key in tag JSONs (mirrors DI's own convention).
-7. **No automated tests.** All verification is manual per the test checklist in §8.
+   petshop a multi-biome zoo layout. CTOV's compat layer uses ONE spawn list per village
+   variant (all cage markers in a plains village use `plains.json`, etc.), giving CTOV
+   petshops a single-biome theme. This matches the maintainer's requested design but means
+   CTOV and DI petshops in the same world will have visibly different cage populations.
+6. **`_doc` and `#comment` JSON fields.** The leading `_doc` key in spawn-list JSONs is not
+   read by code — it's a documentation convention. The parser ignores unknown keys, so it's
+   safe. Same for `replace` (currently informational only — reserved for future merge
+   semantics).
+7. **Variant → biome mapping is hardcoded.** The `variantToBiome()` switch statement in
+   `PetshopCompatStructurePoolElement.java` is compile-time. Adding a new variant requires a
+   code change. A future enhancement could move this mapping to a datapack-driven JSON, but
+   for the 21 currently-shipped variants this is overkill.
+8. **No automated tests.** All verification is manual per the test checklist in §8.
    Compiling and loading the mod in a dev environment is left to the maintainer.

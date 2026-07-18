@@ -23,16 +23,16 @@ Highlights:
 
 - New `ctov:petshop_compat` structure pool element type that mirrors DI's marker-driven
   spawning (`petshop_water`, `petshop_chest`, `petshop_cage_0..3`).
-- 8 CTOV-specific entity tags under `domesticationinnovation:petshop_cage_<biome>`
-  (for the 8 non-vanilla biome families: `badlands`, `beach`, `bamboo`, `cherry`,
-  `jungle`, `mountains`, `mushroom`, `swamp`) — user-editable via datapack or KubeJS,
-  namespace-compatible with DI's own tags. Vanilla-aligned variants continue to use
-  DI's existing `petstore_cage_0..3` tags.
-- Optional data-driven spawn profiles (`ctov:petshop_profiles/<variant>/<marker>.json`)
-  supporting per-entry `weight`, `baby`, `age` (including `age = -60000` for permanent
-  babies).
-- 5 config toggles for safe rollout and debugging.
-- DI-owned tags are **untouched** — only additive CTOV tags are introduced.
+- 13 unified spawn-list JSONs at `data/ctov/petshop_spawns/<biome>.json` (one per biome
+  family: plains, desert, snowy, savanna, badlands, beach, bamboo, cherry, jungle,
+  mountains, mushroom, swamp, fishtank). Each entry has inline `weight`, `baby`, `age`
+  fields — single source of truth for petshop spawns, no separate tag files to maintain.
+  `age = -60000` produces a baby that lasts ~50 in-game hours / ~3 real-time hours (long
+  enough to find and bond with the baby before it grows up).
+- 3 config toggles for safe rollout and debugging.
+- DI-owned tags (`petstore_cage_0..3`, `petstore_fishtank`) are **not consulted** by CTOV's
+  compat layer — they remain for DI's own vanilla-village petshops. Modpacks that want to
+  override everything just edit CTOV's JSON files.
 
 Full design docs: [`docs/DI_COMPAT_PETSHOP.md`](docs/DI_COMPAT_PETSHOP.md).
 
@@ -81,8 +81,8 @@ Yes, just make sure to give credit and a link to the project page.
 This fork targets 1.21.1 only. No backports are planned.
 
 **10. Does this fork break compatibility with the upstream CTOV?**
-No. The fork is purely additive — new files (the petshop compat element, CTOV tags,
-profiles, docs) plus two-line registrations in the existing worldgen registries. The 21
+No. The fork is purely additive — new files (the petshop compat element, spawn-list JSONs,
+docs) plus two-line registrations in the existing worldgen registries. The 21
 lithostitched modifier JSONs have their `element_type` switched from
 `minecraft:single_pool_element` to `ctov:petshop_compat`, but this only takes effect when
 DI / rats / simplycats is loaded (load conditions are unchanged). Without those mods, the

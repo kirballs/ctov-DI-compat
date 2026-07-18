@@ -1,0 +1,11 @@
+{
+  "_doc": "Desert petshop spawns. Applies to: desert, desert_oasis village variants.",
+  "replace": false,
+  "entries": [
+    { "entity": "minecraft:rabbit", "weight": 4 },
+    { "entity": "minecraft:armadillo", "weight": 3 },
+    { "entity": "minecraft:cat", "weight": 2, "baby": true },
+    { "entity": "minecraft:camel", "weight": 1, "age": -60000 },
+    { "entity": "minecraft:husk", "weight": 1, "baby": true }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "_doc": "Fishtank spawns (petshop_water marker). Shared across ALL village variants — aquatic mobs that go inside the petshop fish tank. Spawn count is fixed at 2 per tank.",
+  "replace": false,
+  "entries": [
+    { "entity": "minecraft:tropical_fish", "weight": 6 },
+    { "entity": "minecraft:pufferfish", "weight": 3 },
+    { "entity": "minecraft:axolotl", "weight": 2, "baby": true },
+    { "entity": "minecraft:tadpole", "weight": 2 },
+    { "entity": "minecraft:glow_squid", "weight": 1, "baby": true }
+  ]
+}
