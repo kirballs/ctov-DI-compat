@@ -46,5 +46,20 @@ public class CTOVConfigHelperImpl {
 	public static @NotNull List<? extends String> enabledpillageroutpost(){
 		return CTOVConfigNeoForge.ENABLED_PILLAGER_OUTPOST.get();
 	}
+	public static boolean enableDiPetshopCompat() {
+		return CTOVConfigNeoForge.ENABLE_DI_PETSHOP_COMPAT.get();
+	}
+	public static boolean enableCtovPetshopTagResolution() {
+		return CTOVConfigNeoForge.ENABLE_CTOV_PETSHOP_TAG_RESOLUTION.get();
+	}
+	public static boolean enableDiPetshopFallbackTags() {
+		return CTOVConfigNeoForge.ENABLE_DI_PETSHOP_FALLBACK_TAGS.get();
+	}
+	public static boolean enablePetshopDebugLogging() {
+		return CTOVConfigNeoForge.ENABLE_PETSHOP_DEBUG_LOGGING.get();
+	}
+	public static boolean forcePetshopBabySpawns() {
+		return CTOVConfigNeoForge.FORCE_PETSHOP_BABY_SPAWNS.get();
+	}
 	
 }

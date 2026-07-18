@@ -15,6 +15,7 @@ public class CTOVConfigNeoForge {
 	public static ModConfigSpec COMMON_CONFIG;
 	public static final String CATEGORY_STRUCTURES = "structures";
 	public static final String CATEGORY_WEIGHTS = "weights";
+	public static final String CATEGORY_PETSHOP_COMPAT = "petshop_compat";
 	public static final ModConfigSpec.BooleanValue GENERATE_SMALL_VILLAGES;
 	public static final ModConfigSpec.BooleanValue GENERATE_MEDIUM_VILLAGES;
 	public static final ModConfigSpec.BooleanValue GENERATE_LARGE_VILLAGES;
@@ -25,6 +26,11 @@ public class CTOVConfigNeoForge {
 	public static final ModConfigSpec.IntValue MEDIUM_VILLAGE_WEIGHT;
 	public static final ModConfigSpec.IntValue LARGE_VILLAGE_WEIGHT;
 	public static final ModConfigSpec.IntValue OUTPOST_WEIGHT;
+	public static final ModConfigSpec.BooleanValue ENABLE_DI_PETSHOP_COMPAT;
+	public static final ModConfigSpec.BooleanValue ENABLE_CTOV_PETSHOP_TAG_RESOLUTION;
+	public static final ModConfigSpec.BooleanValue ENABLE_DI_PETSHOP_FALLBACK_TAGS;
+	public static final ModConfigSpec.BooleanValue ENABLE_PETSHOP_DEBUG_LOGGING;
+	public static final ModConfigSpec.BooleanValue FORCE_PETSHOP_BABY_SPAWNS;
 	public static final List<String> VILLAGE_POOL = List.of(
 		"beach", "christmas", "desert", "desert_oasis", "dark_forest",
 		"jungle", "jungle_tree", "mesa", "mesa_fortified", "mountain",
@@ -68,6 +74,19 @@ public class CTOVConfigNeoForge {
 		OUTPOST_WEIGHT = COMMON_BUILDER.comment("CTOV Pillager Outpost spawn chance")
 			.defineInRange("PillagerOutpostWeight", 1,0,Integer.MAX_VALUE);
 		
+		COMMON_BUILDER.pop();
+
+		COMMON_BUILDER.comment("DI petshop compatibility").push(CATEGORY_PETSHOP_COMPAT);
+		ENABLE_DI_PETSHOP_COMPAT = COMMON_BUILDER.comment("Enable CTOV compatibility handling for DI petshop spawns")
+			.define("enableDiPetshopCompat", true);
+		ENABLE_CTOV_PETSHOP_TAG_RESOLUTION = COMMON_BUILDER.comment("Enable CTOV-specific petshop semantic tag resolution")
+			.define("enableCtovPetshopTagResolution", true);
+		ENABLE_DI_PETSHOP_FALLBACK_TAGS = COMMON_BUILDER.comment("Enable fallback to DI petshop tags when CTOV tags are unresolved")
+			.define("enableDiPetshopFallbackTags", true);
+		ENABLE_PETSHOP_DEBUG_LOGGING = COMMON_BUILDER.comment("Enable debug logging for petshop compat marker and spawn resolution")
+			.define("enablePetshopDebugLogging", false);
+		FORCE_PETSHOP_BABY_SPAWNS = COMMON_BUILDER.comment("Force ageable spawned mobs to baby state")
+			.define("forcePetshopBabySpawns", false);
 		COMMON_BUILDER.pop();
 		
 		COMMON_CONFIG = COMMON_BUILDER.build();

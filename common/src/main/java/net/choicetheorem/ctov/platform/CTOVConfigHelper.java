@@ -45,4 +45,24 @@ public class CTOVConfigHelper {
 	public static String[] enabledpillageroutpost(){
 		throw new AssertionError();
 	}
+	@ExpectPlatform
+	public static boolean enableDiPetshopCompat() {
+		throw new AssertionError();
+	}
+	@ExpectPlatform
+	public static boolean enableCtovPetshopTagResolution() {
+		throw new AssertionError();
+	}
+	@ExpectPlatform
+	public static boolean enableDiPetshopFallbackTags() {
+		throw new AssertionError();
+	}
+	@ExpectPlatform
+	public static boolean enablePetshopDebugLogging() {
+		throw new AssertionError();
+	}
+	@ExpectPlatform
+	public static boolean forcePetshopBabySpawns() {
+		throw new AssertionError();
+	}
 }

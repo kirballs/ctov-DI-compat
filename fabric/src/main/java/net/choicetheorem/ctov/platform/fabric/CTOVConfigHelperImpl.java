@@ -47,4 +47,19 @@ public class CTOVConfigHelperImpl {
 	public static @NotNull List<String> enabledpillageroutpost(){
 		return config.structures.enabledpillageroutpost;
 	}
+	public static boolean enableDiPetshopCompat() {
+		return config.petshopCompat.enableDiPetshopCompat;
+	}
+	public static boolean enableCtovPetshopTagResolution() {
+		return config.petshopCompat.enableCtovPetshopTagResolution;
+	}
+	public static boolean enableDiPetshopFallbackTags() {
+		return config.petshopCompat.enableDiPetshopFallbackTags;
+	}
+	public static boolean enablePetshopDebugLogging() {
+		return config.petshopCompat.enablePetshopDebugLogging;
+	}
+	public static boolean forcePetshopBabySpawns() {
+		return config.petshopCompat.forcePetshopBabySpawns;
+	}
 }

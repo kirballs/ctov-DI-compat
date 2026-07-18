@@ -9,6 +9,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructureSets;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -16,6 +18,7 @@ import static net.choicetheorem.ctov.platform.CTOVConfigHelper.*;
 
 public class CTOV {
     public static final String MOD_ID = "ctov";
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     
     public static void init() {
         //System.out.println(ctovExpectPlatform.getConfigDirectory().toAbsolutePath().normalize().toString());

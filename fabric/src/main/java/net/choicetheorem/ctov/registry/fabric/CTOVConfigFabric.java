@@ -17,6 +17,8 @@ public class CTOVConfigFabric implements ConfigData {
 	public Structures structures = new Structures();
 	@ConfigEntry.Gui.CollapsibleObject
 	public Weights weights = new Weights();
+	@ConfigEntry.Gui.CollapsibleObject
+	public PetshopCompat petshopCompat = new PetshopCompat();
 	@ConfigEntry.Gui.Excluded
 	public static final List<String> VILLAGE_POOL = List.of(
 		"beach", "christmas", "desert", "desert_oasis", "dark_forest",
@@ -82,6 +84,19 @@ public class CTOVConfigFabric implements ConfigData {
 		
 		public Weights() {
 		}
+	}
+
+	public static class PetshopCompat {
+		@Comment("Enable CTOV compatibility handling for DI petshop spawns")
+		public boolean enableDiPetshopCompat = true;
+		@Comment("Enable CTOV-specific petshop semantic tag resolution")
+		public boolean enableCtovPetshopTagResolution = true;
+		@Comment("Enable fallback to DI petshop tags when CTOV tags are unresolved")
+		public boolean enableDiPetshopFallbackTags = true;
+		@Comment("Enable debug logging for petshop compat marker and spawn resolution")
+		public boolean enablePetshopDebugLogging = false;
+		@Comment("Force ageable spawned mobs to baby state")
+		public boolean forcePetshopBabySpawns = false;
 	}
 	
 }
