@@ -1,0 +1,16 @@
+{
+  "name": "repurposed_structures:villages/badlands/houses",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 6,
+      "element": {
+        "element_type": "ctov:petshop_compat",
+        "projection": "rigid",
+        "location": "ctov:villages/badlands/petshop",
+        "processors": "minecraft:empty",
+        "biome_profile": "badlands"
+      }
+    }
+  ]
+}

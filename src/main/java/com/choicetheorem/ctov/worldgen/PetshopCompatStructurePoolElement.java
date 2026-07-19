@@ -149,11 +149,15 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
         switch (marker) {
             case "petshop_water" -> handleWater(level, pos, random);
             case "petshop_chest" -> handleChest(level, pos, random);
-            case "petshop_cage_0" -> handleCage(level, pos, random, 1 + random.nextInt(2));
-            case "petshop_cage_1" -> handleCage(level, pos, random, 2 + random.nextInt(2));
-            case "petshop_cage_2" -> handleCage(level, pos, random, 1 + random.nextInt(2));
-            case "petshop_cage_3" -> handleCage(level, pos, random, 1);
-            default -> { /* not our marker — leave the structure block in place */ }
+            default -> {
+                // Any marker starting with "petshop_cage" spawns exactly one entity.
+                // Cage density (1 vs 2-3 mobs) is controlled by how many markers the
+                // structure NBT places inside each cage, not by a random roll here.
+                if (marker.startsWith("petshop_cage")) {
+                    handleCage(level, pos, random, 1);
+                }
+                // Unknown markers are left as structure blocks in place.
+            }
         }
     }
 

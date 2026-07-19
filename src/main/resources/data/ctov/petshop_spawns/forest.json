@@ -1,5 +1,5 @@
 {
-  "_comment": "Forest village petshop spawns. Used by: taiga, taiga_fortified, AND halloween (merged per user instruction). Also reserved for any future mod that adds forest-village biomes (e.g. oak/birch/dark-forest villages).",
+  "_comment": "Forest village petshop spawns. Used by CTOV: taiga, taiga_fortified, halloween. Used by RepurposedStructures: oak, birch, dark_forest, giant_taiga.",
   "entries": [
     { "entity": "minecraft:wolf",     "weight": 30, "baby": true,  "age": -24000 },
     { "entity": "minecraft:fox",      "weight": 25, "baby": true,  "age": -24000 },

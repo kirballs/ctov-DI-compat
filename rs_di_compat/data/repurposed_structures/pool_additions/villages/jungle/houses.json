@@ -1,0 +1,16 @@
+{
+  "name": "repurposed_structures:villages/jungle/houses",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 8,
+      "element": {
+        "element_type": "ctov:petshop_compat",
+        "projection": "rigid",
+        "location": "ctov:villages/jungle/petshop",
+        "processors": "repurposed_structures:villages/jungle/mossify",
+        "biome_profile": "jungle"
+      }
+    }
+  ]
+}

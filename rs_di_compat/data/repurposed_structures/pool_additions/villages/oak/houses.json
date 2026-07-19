@@ -1,0 +1,16 @@
+{
+  "name": "repurposed_structures:villages/oak/houses",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 8,
+      "element": {
+        "element_type": "ctov:petshop_compat",
+        "projection": "rigid",
+        "location": "ctov:villages/oak/petshop",
+        "processors": "repurposed_structures:villages/oak/mossify",
+        "biome_profile": "forest"
+      }
+    }
+  ]
+}
