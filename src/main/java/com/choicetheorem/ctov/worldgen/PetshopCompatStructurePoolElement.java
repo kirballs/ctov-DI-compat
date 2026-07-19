@@ -15,6 +15,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -329,12 +330,12 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
         public static void onReload(AddReloadListenerEvent event) {
             event.addListener(new SimplePreparableReloadListener<Void>() {
                 @Override
-                protected Void prepare(ResourceManager resourceManager) {
+                protected Void prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
                     return null;
                 }
 
                 @Override
-                protected void apply(Void nil, ResourceManager resourceManager) {
+                protected void apply(Void nil, ResourceManager resourceManager, ProfilerFiller profiler) {
                     ProfileLoader.invalidate(resourceManager);
                 }
             });
