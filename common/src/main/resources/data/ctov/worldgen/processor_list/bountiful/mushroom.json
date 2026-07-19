@@ -1,0 +1,12 @@
+{
+	"processors": [
+		{
+			"processor_type": "lithostitched:block_swap",
+			"blocks": {
+				"minecraft:oak_planks": "minecraft:brown_mushroom_block",
+				"minecraft:oak_slab": "minecraft:brown_mushroom_block",
+				"minecraft:spruce_fence":"minecraft:mushroom_stem"
+			}
+		}
+	]
+}

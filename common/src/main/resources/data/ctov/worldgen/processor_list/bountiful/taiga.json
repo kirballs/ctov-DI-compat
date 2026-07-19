@@ -1,0 +1,12 @@
+{
+	"processors": [
+		{
+			"processor_type": "lithostitched:block_swap",
+			"blocks": {
+				"minecraft:oak_planks": "minecraft:spruce_planks",
+				"minecraft:oak_slab": "minecraft:spruce_slab",
+				"minecraft:spruce_fence":"minecraft:spruce_fence"
+			}
+		}
+	]
+}

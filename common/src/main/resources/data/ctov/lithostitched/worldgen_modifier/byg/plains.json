@@ -1,0 +1,28 @@
+{
+	"type": "lithostitched:add_template_pool_elements",
+	"predicate": {
+		"type": "lithostitched:any_of",
+			"predicates": [
+			{
+				"type": "lithostitched:mod_loaded",
+				"mod_id": "byg"
+			},
+			{
+				"type": "lithostitched:mod_loaded",
+				"mod_id": "biomeswevegone"
+			}
+		]
+	},
+	"template_pools": "ctov:village/plains/house",
+	"elements": [
+		{
+			"weight": 5,
+			"element": {
+				"element_type": "minecraft:single_pool_element",
+				"projection": "rigid",
+				"processors": "ctov:village/plains/house",
+				"location":"ctov:village/plains/jobsite/forager"
+			}
+		}
+	]
+}

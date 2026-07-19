@@ -1,0 +1,33 @@
+{
+	"type": "lithostitched:add_template_pool_elements",
+	"predicate": {
+		"type": "lithostitched:any_of",
+		"predicates": [
+			{
+				"type": "lithostitched:mod_loaded",
+				"mod_id": "domesticationinnovation"
+			},
+			{
+				"type": "lithostitched:mod_loaded",
+				"mod_id": "rats"
+			},
+			{
+				"type": "lithostitched:mod_loaded",
+				"mod_id": "simplycats"
+			}
+		]
+	},
+	"template_pools": "ctov:village/plains/house",
+	"elements": [
+		{
+			"weight": 5,
+			"element": {
+				"element_type": "ctov:petshop_compat",
+				"projection": "rigid",
+				"processors": "ctov:village/plains/house",
+				"location": "ctov:village/plains/jobsite/petshop",
+				"biome_profile": "ctov:plains"
+			}
+		}
+	]
+}

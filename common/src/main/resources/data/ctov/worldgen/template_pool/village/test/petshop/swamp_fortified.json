@@ -1,0 +1,16 @@
+{
+    "name": "ctov:village/test/petshop/swamp_fortified",
+    "fallback": "minecraft:village/common/empty",
+    "elements": [
+        {
+            "weight": 1,
+            "element": {
+                "element_type": "ctov:petshop_compat",
+                "projection": "rigid",
+                "location": "ctov:village/swamp_fortified/jobsite/petshop",
+                "processors": "ctov:village/swamp_fortified/house",
+                "biome_profile": "ctov:swamp"
+            }
+        }
+    ]
+}

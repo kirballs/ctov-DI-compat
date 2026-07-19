@@ -1,14 +1,17 @@
-# Domestication Innovation × CTOV — Petshop Compat
+# Domestication Innovation × CTOV — Petshop Compat (3.4.14 port)
 
-This fork of **ChoiceTheorem's Overhauled Village (CTOV)** adds native support for
-**Domestication Innovation (DI)** petshop structures in every CTOV village variant
-on **Minecraft 1.20.1 / Forge**.
+This branch ports the DI petshop compat layer from CTOV v3.3.1 to CTOV v3.4.14.
+The v3.4.14 host project is a multi-loader Architectury project targeting
+**Minecraft 1.20.x** (1.20.1 included — see compatibility note below) with Forge 48, NeoForge 20.2, Fabric, and Quilt — so the
+compat layer now ships across all four platforms instead of Forge-only.
 
 With this compat layer installed, CTOV villages will:
 
 1. Actually contain DI-style petshop buildings (one per village, when the pool rolls one).
 2. Spawn biome-appropriate pets inside the cages (rather than leaving them empty).
-3. Stock the petshop chest with DI's loot table (when DI is installed).
+3. Stock the petshop chest with DI's loot table (when DI is installed — chest loot
+   already resolves automatically via CTOV's existing .nbt setup, this layer is
+   defensive in case the marker dispatch ever needs to bind it).
 4. Fill the fishtank with biome-appropriate aquatic mobs and underwater decorations.
 
 The implementation is **per-biome configurable** — every CTOV village variant maps to a
@@ -19,15 +22,18 @@ datapack at the same path.
 
 ## Why this is needed
 
-CTOV v3.3.1 ships 21 petshop structure NBTs (one per village variant) as part of a
-separate `ctov-domestication-innovation-add-on` datapack. Those NBTs contain data-marker
-structure blocks (`petshop_water`, `petshop_chest`, `petshop_cage_0..3`) that DI's own
-`PetshopStructurePoolElement` is supposed to process — turning the markers into real mobs,
-loot, and decorations.
+CTOV v3.4.14 ships 21 petshop structure NBTs at
+`common/src/main/resources/data/ctov/structures/village/<biome>/jobsite/petshop.nbt`.
+Those NBTs contain data-marker structure blocks (`petshop_water`, `petshop_chest`,
+`petshop_cage_0..3`) that DI's own `PetshopStructurePoolElement` is supposed to process —
+turning the markers into real mobs, loot, and decorations.
 
-The problem: CTOV's `house.json` pool files declared the petshop entries as
-`minecraft:single_pool_element`. That element type **does not** process data markers —
-so the cages ended up empty, the chest stayed empty, and the fishtank stayed dry.
+The problem: CTOV's Lithostitched modifier JSONs at
+`data/ctov/lithostitched/worldgen_modifier/domesticationinnovation/<biome>.json`
+declare the petshop entries as `minecraft:single_pool_element`. That element type
+**does not** process data markers — so the cages ended up empty, the fishtank stayed dry,
+and only the chest (which has its loot table resolved separately via CTOV's existing
+setup when DI is loaded) worked.
 
 DI's own `PetshopStructurePoolElement` only injects itself into the five vanilla village
 pools (`minecraft:village/<biome>/houses`) via Citadel's `VillageHouseManager`. Because
@@ -38,14 +44,15 @@ This fork closes that gap by:
 
 - Registering a new pool element type, `ctov:petshop_compat`, that extends
   `LegacySinglePoolElement` and overrides `handleDataMarker` to do the same job as DI's
-  class.
-- Switching all 21 CTOV `house.json` petshop entries from `minecraft:single_pool_element`
-  to `ctov:petshop_compat` (with a `biome_profile` field that selects the spawn table).
-- Bundling the 21 petshop NBTs into the main jar so the mod is self-contained — no
-  separate datapack required.
-- Reading per-biome spawn profiles from `data/ctov/petshop_spawns/<biome>.json` instead of
-  DI's five global entity-type tags, so a plains petshop can stock different pets than a
-  snowy petshop.
+  class. Registered per-platform (Forge `DeferredRegister`, NeoForge `DeferredRegister`,
+  Fabric/Quilt `Registry.register`).
+- Switching all 21 CTOV DI Lithostitched modifier JSONs from
+  `minecraft:single_pool_element` to `ctov:petshop_compat` (with a `biome_profile` field
+  that selects the spawn table).
+- Reading per-biome spawn profiles from
+  `common/src/main/resources/data/ctov/petshop_spawns/<biome>.json` instead of DI's five
+  global entity-type tags, so a plains petshop can stock different pets than a snowy
+  petshop.
 
 ---
 
@@ -53,16 +60,29 @@ This fork closes that gap by:
 
 **Required:**
 
-- Minecraft 1.20.1
-- Forge 47.2.0 (or any 47.x — Forge 47 is the 1.20.1 line)
+- Minecraft 1.20.1 (the mod is built against 1.20.2 mappings via the upstream `gradle.properties`, but CTOV's own `minecraft_version_range=[1.20,1.21)` covers all 1.20.x releases; 1.20.1 is the primary target since DI 1.7.x is Forge-only on 1.20.1)
+- A supported mod loader (pick one):
+  - Forge 48.1.0 or newer
+  - NeoForge 20.2.88 or newer
+  - Fabric Loader 0.15.11 or newer (with Fabric API)
+  - Quilt Loader 0.26.0 or newer (with Quilted Fabric API)
 - ChoiceTheorem's Overhauled Village — this fork's jar (replaces the upstream CTOV jar)
+- Lithostitched 1.4 or newer (hard dependency — CTOV itself depends on this)
 
 **Recommended:**
 
 - [Domestication Innovation](https://www.curseforge.com/minecraft/mc-mods/domestication-innovation)
-  1.7.0 or newer — required only for the petshop chest loot table. Without DI installed,
-  petshops will still spawn entities and fishtank decorations; only the chest will be
-  empty.
+  1.7.0 or newer — DI is Forge-only on 1.20.x, so this only applies on the Forge and
+  NeoForge builds. The chest loot table resolves automatically via CTOV's existing .nbt
+  setup when DI is loaded; the custom `ctov:petshop_compat` element type is what makes the
+  cage mobs and fishtank décor actually spawn.
+
+> **Note on Fabric/Quilt:** DI does not ship a Fabric build, so on those loaders the
+> Lithostitched modifier JSONs (which gate on `mod_loaded:domesticationinnovation`)
+> never inject petshop buildings in the first place. The custom element type is
+> registered on Fabric/Quilt defensively so the modifier JSONs parse cleanly if
+> Lithostitched ever validates them, but it is never actually used at worldgen time
+> on those platforms.
 
 Drop both jars into your `mods/` folder. No further configuration is needed.
 
@@ -94,260 +114,190 @@ schema:
 
 | Field      | Type    | Required | Default     | Notes |
 |------------|---------|----------|-------------|-------|
-| `entity`   | string  | yes      | —           | A registered entity ID, e.g. `minecraft:wolf` or `some_mod:foo`. Unknown IDs are logged and skipped at spawn time (no crash). |
-| `weight`   | int ≥ 1 | yes      | —           | Relative weight. The probability of an entry being picked is `weight / sum(all weights)`. |
+| `entity`   | string  | yes      | —           | A registered entity ID, e.g. `minecraft:wolf` or `some_mod:foo`. Unknown IDs are silently skipped at spawn time (no crash). |
+| `weight`   | int ≥ 1 | no       | `1`         | Relative weight. The probability of an entry being picked is `weight / sum(all weights)`. |
 | `baby`     | bool    | no       | `false`     | If `true`, the spawned entity is aged down via `AgeableMob.setAge(age)`. No-op for non-`AgeableMob` entities (e.g. parrots, bats). |
 | `age`      | int     | no       | `-24000`    | Only used when `baby: true`. **Negative = baby; more negative = longer baby duration.** `Integer.MIN_VALUE` (−2147483648) ≈ permanent baby. `0` is NOT baby — it forces immediate adulthood. One Minecraft day = 24000 ticks, so the default `-24000` means "baby for one day". |
 
-### Important: how `age` actually works
+> **Footgun warning:** Do NOT combine `baby: true` with `age: 0`. That produces an adult
+> mob that *looks* like it was supposed to be a baby. Either omit `age` (defaults to
+> `-24000`) or set it to a clearly negative value when `baby` is true.
 
-The `age` field is passed directly to `AgeableMob.setAge(int)`. Minecraft's internal
-contract is:
+### Biome → profile mapping
 
-- **Positive** → adult, with a countdown timer until breeding is allowed again (positive
-  ticks).
-- **Zero** → adult, ready to breed.
-- **Negative** → baby. The magnitude is how many ticks the mob stays a baby before growing
-  up. `-24000` = 1 in-game day. `-72000` = 3 in-game days.
+CTOV ships 21 village variants. They map to 14 spawn profiles (some biomes share a
+profile per the maintainer's biome-merging rules):
 
-So:
+| CTOV village variant(s)                                   | Spawn profile |
+|-----------------------------------------------------------|---------------|
+| `plains`, `plains_fortified`                              | `plains`      |
+| `desert`, `desert_oasis`                                  | `desert`      |
+| `snowy_igloo`, `christmas`                                | `snowy`       |
+| `savanna`, `savanna_na`                                   | `savanna`     |
+| `mesa`, `mesa_fortified`                                  | `badlands`    |
+| `beach`                                                   | `beach`       |
+| `jungle`, `jungle_tree`                                   | `jungle`      |
+| `mountain`, `mountain_alpine`                             | `mountain`    |
+| `mushroom`                                                | `mushroom`    |
+| `swamp`, `swamp_fortified`                                | `swamp`       |
+| `taiga`, `taiga_fortified`, `halloween`, `dark_forest`    | `forest`      |
+| (reserved — no CTOV 1.20.x village yet)                  | `underground` |
+| (reserved — no CTOV 1.20.x village yet)                  | `cherry`      |
+| All biomes — used for `petshop_water` marker              | `fishtank`    |
 
-- `"baby": true, "age": -24000` → baby for 1 day (default)
-- `"baby": true, "age": -72000` → baby for 3 days
-- `"baby": true, "age": -2147483648` → effectively permanent baby (won't grow up in any
-  reasonable playtime)
-- `"baby": true, "age": 0` → instantly grows up (baby flag is immediately overridden by
-  the age=0 adulthood state). Don't do this — just omit `baby` instead.
-
-The `baby: true` flag is a convenience that mirrors the natural-language meaning, but the
-actual lifetime is governed entirely by `age`.
-
-### Overriding profiles via datapack
-
-To customize a profile, create a datapack with a file at
-`data/ctov/petshop_spawns/<profile>.json` containing your replacement entries. The
-profile is reloaded automatically when datapacks are reloaded (`/reload`).
-
-You can also add **new** profiles this way and reference them from a custom `house.json`
-pool entry by setting `biome_profile` to your new profile name.
+To override any profile, drop a JSON file at
+`<datapack>/data/ctov/petshop_spawns/<profile>.json` with the same schema.
 
 ---
 
-## Biome-to-profile mapping
+## Marker dispatch
 
-The 21 CTOV v3.3.1 village variants map onto 14 named profiles. The merging was chosen
-to keep biomes with thematic overlap together while preserving biome distinctions the
-community cared about.
+Inside every `petshop.nbt` structure file are 6 data-marker structure blocks (saved with
+`"metadata": "<marker_name>"`). Vanilla `single_pool_element` clears them all to air.
+`ctov:petshop_compat` dispatches on the marker name:
 
-| Profile       | CTOV biome variants                                  | Notes |
-|---------------|------------------------------------------------------|-------|
-| `plains`      | plains, plains_fortified                             | |
-| `desert`      | desert, desert_oasis                                 | |
-| `snowy`       | snowy_igloo, christmas                               | Christmas merged into snowy per user request. |
-| `savanna`     | savanna, savanna_na                                  | |
-| `badlands`    | mesa, mesa_fortified                                 | |
-| `beach`       | beach                                                | |
-| `jungle`      | jungle, jungle_tree                                  | Kept separate per user request. |
-| `mountain`    | mountain, mountain_alpine                            | |
-| `mushroom`    | mushroom                                             | |
-| `swamp`       | swamp, swamp_fortified                               | Kept separate per user request. |
-| `forest`      | taiga, taiga_fortified, halloween                    | Halloween merged into forest per user request. **Reserved** for future mods that add forest-village biomes (oak/birch/dark-forest). |
-| `underground` | (no petshop in CTOV v3.3.1)                          | Profile reserved for completeness; will activate if a future CTOV build adds an underground petshop. |
-| `fishtank`    | (shared across all biomes — used by `petshop_water`) | Not a biome profile; selected automatically for the fishtank marker. |
-| `cherry`      | (no CTOV v3.3.1 village)                             | **Reserved** for future mods that add cherry-blossom villages. |
+| Marker          | Behaviour                                                                                                                       |
+|-----------------|---------------------------------------------------------------------------------------------------------------------------------|
+| `petshop_water` | Spawn 2 from the shared `fishtank` profile, then place water / seagrass / waterlogged coral at the marker position.             |
+| `petshop_chest` | Clear the marker (already done by vanilla). Defensive: bind the chest-below to `domesticationinnovation:chests/petshop_chest`.  |
+| `petshop_cage_0`| Spawn 1–2 from the biome profile.                                                                                                |
+| `petshop_cage_1`| Spawn 2–3 from the biome profile.                                                                                                |
+| `petshop_cage_2`| Spawn 1–2 from the biome profile.                                                                                                |
+| `petshop_cage_3`| Spawn 1 from the biome profile.                                                                                                  |
 
----
+The chest loot table works in stock CTOV+DI without our compat layer (per maintainer
+observation) — CTOV's .nbt files reference DI's loot table and DI resolves it when
+loaded. Our `petshop_chest` handler is defensive: if the chest below the marker doesn't
+already have the loot table bound, we bind it ourselves. If DI's loot table is
+unresolved (DI not loaded), the call is a no-op — the chest stays empty, no crash.
 
-## How a petshop actually gets built
-
-When a CTOV village generates and the village's `house.json` pool rolls a petshop entry,
-this is what happens, in order:
-
-1. **Pool element selection.** The pool entry's `element_type` is `ctov:petshop_compat`,
-   so the Forge registry instantiates a `PetshopCompatStructurePoolElement` with the
-   `biome_profile` field from the JSON.
-2. **NBT placement.** The element places the biome's `petshop.nbt` structure file into
-   the world, just like `single_pool_element` would. The structure contains
-   `minecraft:structure_block` markers with data-mode NBT.
-3. **Marker processing.** Once the structure is placed, the game calls
-   `handleDataMarker(...)` for each marker. Our override dispatches on the marker's
-   `metadata` string:
-   - `petshop_water` → spawns 1–2 entities from the `fishtank` profile, then replaces the
-     marker with either water, seagrass, or a waterlogged coral (randomized 50% / 25% /
-     25%). Mirrors DI's fishtank décor.
-   - `petshop_chest` → clears the marker block, then binds the block below it to DI's
-     `domesticationinnovation:chests/petshop_chest` loot table. If DI is not installed,
-     the chest is simply empty (no crash).
-   - `petshop_cage_*` → **any marker whose name starts with `petshop_cage`** spawns
-     exactly **1** entity from the active biome profile. Cage density (how many mobs
-     appear in a single cage) is controlled by how many `petshop_cage_*` markers the
-     structure .nbt places inside that cage — not by a random roll in code. This avoids
-     entity clipping in small 1-block cages and gives .nbt builders direct control over
-     per-cage pet count.
-4. **Entity finalization.** Each spawned entity is given persistence (so it doesn't
-   despawn), has `MobSpawnType.STRUCTURE` finalized, and has its age applied (if `baby:
-   true` was set in the profile entry).
-
-The fishtank decoration RNG mirrors DI's reference implementation so the visual result
-is identical to a vanilla DI petshop.
+Age is applied **after** `Mob.finalizeSpawn(...)` to avoid being overwritten by
+finalizeSpawn's own age reset.
 
 ---
 
-## Soft-dependency on DI
+## Architecture (3.4.14 multi-loader port)
 
-This compat is a **soft dependency** on DI — declared in `mods.toml` as
-`mandatory=false`. The mod loads and works without DI installed; you just won't get
-the chest loot table.
+The compat layer is split across the Architectury modules:
 
-This is intentional: it lets users run CTOV alone with biome-themed petshops as a
-standalone feature, and it lets modpack makers opt into the full DI experience by simply
-adding DI to the mod list.
+```
+common/src/main/java/net/ctov/petshop/
+    PetshopSpawnProfile.java              — codec + weighted-pick helper (pure data)
+    PetshopCompatStructurePoolElement.java — extends LegacySinglePoolElement,
+                                              adds biome_profile field, dispatches
+                                              on marker strings
+    PetshopCompatRegistries.java          — common accessor: each platform publishes
+                                              its registered type via setTypeSupplier()
+
+forge/src/main/java/net/ctov/forge/petshop/
+    PetshopCompatForgeRegistry.java       — DeferredRegister + RegistryObject,
+                                              publishes to PetshopCompatRegistries
+
+neoforge/src/main/java/net/ctov/neoforge/petshop/
+    PetshopCompatNeoRegistry.java         — same pattern, NeoForge 20.2.x still uses
+                                              net.minecraftforge.registries packages
+
+fabric/src/main/java/net/ctov/fabric/petshop/
+    PetshopCompatFabricRegistry.java      — Registry.register on onInitialize
+
+quilt/src/main/java/net/ctov/quilt/petshop/
+    PetshopCompatQuiltRegistry.java       — same as Fabric, different entry point
+```
+
+The platform mod entry points (`ctovForge`, `ctovNeo`, `ctovFabric`, `ctovQuilt`) each
+call their platform's `init()` method to register the type and publish it to the common
+accessor.
 
 ---
 
-## In-game testing without spawning a village
+## Files modified (vs upstream CTOV 3.4.14)
 
-Testing the petshop used to require finding a CTOV village in survival or generating one
-via `/locate`. With the bundled **test template pools**, you can spawn a single,
-fully-populated petshop at your feet using the
-[CommandStructures](https://www.curseforge.com/minecraft/mc-mods/commandstructures)
-mod by telepathicgrunt.
+- 21 Lithostitched modifier JSONs at
+  `common/src/main/resources/data/ctov/lithostitched/worldgen_modifier/domesticationinnovation/*.json`:
+  flipped `element_type` from `minecraft:single_pool_element` to `ctov:petshop_compat`
+  + added `biome_profile` field.
+- 14 new spawn profile JSONs at
+  `common/src/main/resources/data/ctov/petshop_spawns/*.json`.
+- 21 new isolated test template pools at
+  `common/src/main/resources/data/ctov/worldgen/template_pool/village/test/petshop/*.json`
+  — for use with the [CommandStructures](https://www.curseforge.com/minecraft/mc-mods/commandstructures)
+  mod to spawn individual petshops without spawning the whole village (see
+  Testing section below).
+- 7 new Java files (3 common, 4 platform-specific).
+- 4 platform mod entry points updated to call the registry glue.
+- 4 platform metadata files (`mods.toml` × 2, `fabric.mod.json`, `quilt.mod.json`)
+  updated to declare `domesticationinnovation` as a soft dependency.
+- This doc + `docs/internal_mapping.md`.
 
-### Setup
+---
 
-Install CommandStructures alongside CTOV + DI (all three mods loaded). The test pools are
-shipped inside the CTOV jar itself — no extra datapack required.
+## Testing with CommandStructures
 
-### Spawn one petshop
+The [CommandStructures](https://www.curseforge.com/minecraft/mc-mods/commandstructures)
+mod lets you spawn individual NBT structures at a position via
+`/spawnstructure`. CTOV ships 21 isolated test template pools at
+`data/ctov/worldgen/template_pool/village/test/petshop/<biome>.json` — each
+contains exactly ONE petshop element with `element_type: ctov:petshop_compat`.
 
-The test pools live under the resource path `ctov:village/test/petshop/<biome>` — one per
-CTOV village variant (21 total). Each pool contains exactly one element: the petshop .nbt
-for that biome, wired up with `ctov:petshop_compat` so the cages, chest, and fishtank are
-all populated just like they would be in a real village.
-
-Run CommandStructures' `/spawnstructure` command with **depth 0** so only the start piece
-generates (no jigsaw branching):
+To spawn just a petshop (no village) for testing:
 
 ```
 /spawnstructure ~ ~ ~ ctov:village/test/petshop/<biome> 0 false false false false
 ```
 
-Argument breakdown (after the pool ID):
-
-| # | Arg | Value | Why |
-|---|-----|-------|-----|
-| 3 | depth | `0` | Only the petshop piece — no child jigsaw pieces. |
-| 4 | heightmapsnap | `false` | Spawn at the player's exact Y, not snapped to terrain. |
-| 5 | legacyboundingboxrule | `false` | This is required `true` for full villages; for a single piece, `false`. |
-| 6 | disableprocessors | `false` | Keep the detailing processors (moss, cracking, biome tinting) so the test reflects production. |
-| 7 | sendchunklightingpacket | `false` | Relight chunks naturally — fine for static structures like the petshop. |
-
-### Examples
-
-Spawn the plains petshop at your feet (cages will contain cows, sheep, pigs, chickens;
-chest will have DI loot; fishtank will have tropical fish):
-
-```
-/spawnstructure ~ ~ ~ ctov:village/test/petshop/plains 0 false false false false
-```
-
-Spawn the swamp variant (cages will have slimes, witches, cats):
-
-```
-/spawnstructure ~ ~ ~ ctov:village/test/petshop/swamp 0 false false false false
-```
-
-Spawn a fortified variant — these share a biome profile with their non-fortified
-counterpart, so the **spawns will be identical**; only the building geometry differs:
-
-```
-/spawnstructure ~ ~ ~ ctov:village/test/petshop/swamp_fortified 0 false false false false
-```
+The `0` (jigsaw depth) means no jigsaw chain — only the single petshop .nbt
+is placed. The `ctov:petshop_compat` element type fires its
+`handleDataMarker(...)` for every structure-block marker inside the .nbt,
+so you get the full DI compat logic (cage mobs, fishtank décor, water blocks,
+chest marker) without needing to /locate a village.
 
 ### Available test pools
 
-All 21 village variants have a test pool — substitute any of these for `<biome>` above:
+| Biome | Pool id |
+|---|---|
+| Beach | `ctov:village/test/petshop/beach` |
+| Christmas | `ctov:village/test/petshop/christmas` |
+| Dark Forest (uses halloween .nbt) | `ctov:village/test/petshop/dark_forest` |
+| Desert | `ctov:village/test/petshop/desert` |
+| Desert Oasis | `ctov:village/test/petshop/desert_oasis` |
+| Jungle | `ctov:village/test/petshop/jungle` |
+| Jungle Tree | `ctov:village/test/petshop/jungle_tree` |
+| Mesa (Badlands) | `ctov:village/test/petshop/mesa` |
+| Mesa Fortified | `ctov:village/test/petshop/mesa_fortified` |
+| Mountain | `ctov:village/test/petshop/mountain` |
+| Mountain Alpine | `ctov:village/test/petshop/mountain_alpine` |
+| Mushroom | `ctov:village/test/petshop/mushroom` |
+| Plains | `ctov:village/test/petshop/plains` |
+| Plains Fortified | `ctov:village/test/petshop/plains_fortified` |
+| Savanna | `ctov:village/test/petshop/savanna` |
+| Savanna NA | `ctov:village/test/petshop/savanna_na` |
+| Snowy | `ctov:village/test/petshop/snowy` |
+| Swamp | `ctov:village/test/petshop/swamp` |
+| Swamp Fortified | `ctov:village/test/petshop/swamp_fortified` |
+| Taiga | `ctov:village/test/petshop/taiga` |
+| Taiga Fortified | `ctov:village/test/petshop/taiga_fortified` |
 
-| Profile | Variants (test pool IDs) |
-|---------|--------------------------|
-| plains | `plains`, `plains_fortified` |
-| desert | `desert`, `desert_oasis` |
-| snowy | `snowy_igloo`, `christmas` |
-| savanna | `savanna`, `savanna_na` |
-| badlands | `mesa`, `mesa_fortified` |
-| beach | `beach` |
-| jungle | `jungle`, `jungle_tree` |
-| mountain | `mountain`, `mountain_alpine` |
-| mushroom | `mushroom` |
-| swamp | `swamp`, `swamp_fortified` |
-| forest | `taiga`, `taiga_fortified`, `halloween` |
-
-### What spawns in each petshop
-
-The `biome_profile` field on each test pool entry selects the spawn table from
-`data/ctov/petshop_spawns/<profile>.json` — see the **Per-biome spawn profiles** section
-above for the full list of mobs per profile. The cage counts per marker are fixed by
-`PetshopCompatStructurePoolElement.handleDataMarker()`:
-
-- `petshop_cage_*` → exactly 1 mob per marker (cage density is controlled by how many markers the .nbt places per cage)
-- `petshop_water` → 2 fish + seagrass/coral decoration
-- `petshop_chest` → DI loot table (only when DI is installed)
-
-### Why `/spawnpieces` won't work for this
-
-CommandStructures also has a `/spawnpieces` command that places a raw .nbt file directly.
-**Don't use it for testing the DI compat** — `/spawnpieces` bypasses the jigsaw pool
-system, so the .nbt gets placed by vanilla's `single_pool_element` logic, which does not
-process the `petshop_*` data markers. You'd get the building geometry (walls, cages,
-water, chest) but cages would be empty, chest would have no loot, and the fishtank would
-have no fish. `/spawnstructure` is the right tool because it runs the jigsaw pool system,
-which fires `ctov:petshop_compat`'s `handleDataMarker` override.
-
-### Isolation
-
-The 21 test pools live under `data/ctov/worldgen/template_pool/village/test/petshop/` and
-are **never referenced by any village's `house.json`**. They exist solely as targets for
-CommandStructures' `/spawnstructure` command. Normal village generation is completely
-unaffected — villages will continue to roll petshops from their patched `house.json`
-files exactly as before.
+For biomes with multiple processor variants (mushroom, savanna, snowy), the
+test pool uses the first variant. To test another variant, edit the test
+pool's `processors` field — e.g. to test the red savanna house instead of
+orange, change `ctov:village/savanna/house_orange` to
+`ctov:village/savanna/house_red` in
+`common/src/main/resources/data/ctov/worldgen/template_pool/village/test/petshop/savanna.json`
+and rebuild.
 
 ---
 
-## File layout (reference)
+## Comparison to the v3.3.1 port
 
-```
-src/main/
-├── java/com/choicetheorem/ctov/
-│   ├── ctov.java                                  ← mod entry; registers pool-element DeferredRegister
-│   ├── registry/
-│   │   └── CTOVRegistry.java                      ← DeferredRegister for ctov:petshop_compat
-│   └── worldgen/
-│       ├── PetshopCompatStructurePoolElement.java ← the pool element class (handleDataMarker dispatch)
-│       └── PetshopSpawnProfile.java               ← JSON schema + weighted-pick helper
-└── resources/data/ctov/
-    ├── petshop_spawns/                            ← 14 spawn profile JSONs
-    │   ├── plains.json
-    │   ├── desert.json
-    │   ├── snowy.json
-    │   ├── savanna.json
-    │   ├── badlands.json
-    │   ├── beach.json
-    │   ├── jungle.json
-    │   ├── mountain.json
-    │   ├── mushroom.json
-    │   ├── swamp.json
-    │   ├── forest.json
-    │   ├── underground.json
-    │   ├── fishtank.json
-    │   └── cherry.json
-    ├── structures/village/<biome>/jobsite/
-    │   └── petshop.nbt                            ← 21 NBTs (moved out of the add-on datapack)
-    └── worldgen/template_pool/village/
-        ├── <biome>/house.json                     ← 21 patched pool files (petshop entries now use ctov:petshop_compat)
-        └── test/petshop/<biome>.json              ← 21 isolated test pools for CommandStructures /spawnstructure
-```
+The v3.3.1 port (Forge-only) is preserved on the archive tag
+`archive/di-petshop-compat-1.20.1-20250719`. The 3.4.14 port differs in:
 
-The `src/main/ctov-domestication-innovation-add-on/` datapack directory is left untouched
-for backward compatibility — if a user still has the old datapack installed, its NBTs
-will simply override the jar's NBTs (identical content), and the patched `house.json`
-files will pick them up the same way.
+- **Build system:** Architectury multi-loader (Forge, NeoForge, Fabric, Quilt) instead
+  of Forge-only ForgeGradle 6.
+- **Minecraft version:** still 1.20.x — the upstream `gradle.properties` pins to 1.20.2 mappings, but CTOV's `minecraft_version_range=[1.20,1.21)` keeps it 1.20.1-compatible. DI 1.7.x is Forge-only on 1.20.1, so the primary test target is still 1.20.1 + Forge 47/48.
+- **Compat delivery:** Lithostitched modifier JSONs (was 21 patched `house.json` files).
+- **Petshop .nbt files:** already bundled in the jar by upstream CTOV (was a separate
+  datapack in v3.3.1, the v3.3.1 port moved them into the jar — not needed here).
+- **Java package:** `net.ctov.petshop` (was `com.choicetheorem.ctov`).
+- **Per-platform registry glue:** Forge + NeoForge `DeferredRegister`, Fabric + Quilt
+  `Registry.register` (was a single Forge `DeferredRegister`).

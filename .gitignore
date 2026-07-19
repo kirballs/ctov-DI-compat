@@ -1,5 +1,6 @@
 .gradle/
 .vscode/
+.idea/*
 bin/
 build/
 ChoiceTheorem's-overhauled-village.jar
@@ -8,3 +9,4 @@ run/*
 .gitignore
 gradle/*
 mcmodsrepo/*
+.eclipse/*
