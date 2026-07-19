@@ -1,6 +1,9 @@
-name: Build Mod (Manual)
+name: Build Mod
 
 on:
+  push:
+    branches: ["di-petshop-compat-1.20.1", "di-petshop-compat-3.4.14"]
+  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -22,12 +25,35 @@ jobs:
       run: chmod +x gradlew
 
     - name: Build with Gradle
-      run: ./gradlew build --stacktrace --info
+      run: ./gradlew build --stacktrace
       env:
         GRADLE_OPTS: "-Xmx4G -Dorg.gradle.daemon=false"
 
-    - name: Upload mod jar
+    - name: Upload Forge jar
       uses: actions/upload-artifact@v4
       with:
-        name: usualallies-mod
-        path: build/libs/*.jar
+        name: ctov-di-compat-forge
+        path: forge/build/libs/*forge*.jar
+        if-no-files-found: warn
+
+    - name: Upload NeoForge jar
+      uses: actions/upload-artifact@v4
+      with:
+        name: ctov-di-compat-neoforge
+        path: neoforge/build/libs/*neoforge*.jar
+        if-no-files-found: warn
+
+    - name: Upload Fabric jar
+      uses: actions/upload-artifact@v4
+      with:
+        name: ctov-di-compat-fabric
+        path: fabric/build/libs/*fabric*.jar
+        if-no-files-found: warn
+
+    - name: Upload all jars
+      uses: actions/upload-artifact@v4
+      with:
+        name: ctov-di-compat-all-jars
+        path: |
+          */build/libs/*.jar
+        if-no-files-found: warn
