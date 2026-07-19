@@ -1,0 +1,16 @@
+{
+    "name": "ctov:village/test/petshop/mesa_fortified",
+    "fallback": "minecraft:village/common/empty",
+    "elements": [
+        {
+            "weight": 1,
+            "element": {
+                "element_type": "ctov:petshop_compat",
+                "projection": "rigid",
+                "location": "ctov:village/mesa_fortified/jobsite/petshop",
+                "processors": "ctov:detailing/mesa/village",
+                "biome_profile": "badlands"
+            }
+        }
+    ]
+}

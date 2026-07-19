@@ -178,16 +178,18 @@ this is what happens, in order:
    - `petshop_chest` → clears the marker block, then binds the block below it to DI's
      `domesticationinnovation:chests/petshop_chest` loot table. If DI is not installed,
      the chest is simply empty (no crash).
-   - `petshop_cage_0` → spawns 1–2 entities from the active biome profile.
-   - `petshop_cage_1` → spawns 2–3 entities from the active biome profile.
-   - `petshop_cage_2` → spawns 1–2 entities from the active biome profile.
-   - `petshop_cage_3` → spawns exactly 1 entity (parrot-perch semantics, matching DI).
+   - `petshop_cage_*` → **any marker whose name starts with `petshop_cage`** spawns
+     exactly **1** entity from the active biome profile. Cage density (how many mobs
+     appear in a single cage) is controlled by how many `petshop_cage_*` markers the
+     structure .nbt places inside that cage — not by a random roll in code. This avoids
+     entity clipping in small 1-block cages and gives .nbt builders direct control over
+     per-cage pet count.
 4. **Entity finalization.** Each spawned entity is given persistence (so it doesn't
    despawn), has `MobSpawnType.STRUCTURE` finalized, and has its age applied (if `baby:
    true` was set in the profile entry).
 
-The cage entity count and decoration RNG mirror DI's reference implementation so the
-visual result is identical to a vanilla DI petshop.
+The fishtank decoration RNG mirrors DI's reference implementation so the visual result
+is identical to a vanilla DI petshop.
 
 ---
 
@@ -200,6 +202,114 @@ the chest loot table.
 This is intentional: it lets users run CTOV alone with biome-themed petshops as a
 standalone feature, and it lets modpack makers opt into the full DI experience by simply
 adding DI to the mod list.
+
+---
+
+## In-game testing without spawning a village
+
+Testing the petshop used to require finding a CTOV village in survival or generating one
+via `/locate`. With the bundled **test template pools**, you can spawn a single,
+fully-populated petshop at your feet using the
+[CommandStructures](https://www.curseforge.com/minecraft/mc-mods/commandstructures)
+mod by telepathicgrunt.
+
+### Setup
+
+Install CommandStructures alongside CTOV + DI (all three mods loaded). The test pools are
+shipped inside the CTOV jar itself — no extra datapack required.
+
+### Spawn one petshop
+
+The test pools live under the resource path `ctov:village/test/petshop/<biome>` — one per
+CTOV village variant (21 total). Each pool contains exactly one element: the petshop .nbt
+for that biome, wired up with `ctov:petshop_compat` so the cages, chest, and fishtank are
+all populated just like they would be in a real village.
+
+Run CommandStructures' `/spawnstructure` command with **depth 0** so only the start piece
+generates (no jigsaw branching):
+
+```
+/spawnstructure ~ ~ ~ ctov:village/test/petshop/<biome> 0 false false false false
+```
+
+Argument breakdown (after the pool ID):
+
+| # | Arg | Value | Why |
+|---|-----|-------|-----|
+| 3 | depth | `0` | Only the petshop piece — no child jigsaw pieces. |
+| 4 | heightmapsnap | `false` | Spawn at the player's exact Y, not snapped to terrain. |
+| 5 | legacyboundingboxrule | `false` | This is required `true` for full villages; for a single piece, `false`. |
+| 6 | disableprocessors | `false` | Keep the detailing processors (moss, cracking, biome tinting) so the test reflects production. |
+| 7 | sendchunklightingpacket | `false` | Relight chunks naturally — fine for static structures like the petshop. |
+
+### Examples
+
+Spawn the plains petshop at your feet (cages will contain cows, sheep, pigs, chickens;
+chest will have DI loot; fishtank will have tropical fish):
+
+```
+/spawnstructure ~ ~ ~ ctov:village/test/petshop/plains 0 false false false false
+```
+
+Spawn the swamp variant (cages will have slimes, witches, cats):
+
+```
+/spawnstructure ~ ~ ~ ctov:village/test/petshop/swamp 0 false false false false
+```
+
+Spawn a fortified variant — these share a biome profile with their non-fortified
+counterpart, so the **spawns will be identical**; only the building geometry differs:
+
+```
+/spawnstructure ~ ~ ~ ctov:village/test/petshop/swamp_fortified 0 false false false false
+```
+
+### Available test pools
+
+All 21 village variants have a test pool — substitute any of these for `<biome>` above:
+
+| Profile | Variants (test pool IDs) |
+|---------|--------------------------|
+| plains | `plains`, `plains_fortified` |
+| desert | `desert`, `desert_oasis` |
+| snowy | `snowy_igloo`, `christmas` |
+| savanna | `savanna`, `savanna_na` |
+| badlands | `mesa`, `mesa_fortified` |
+| beach | `beach` |
+| jungle | `jungle`, `jungle_tree` |
+| mountain | `mountain`, `mountain_alpine` |
+| mushroom | `mushroom` |
+| swamp | `swamp`, `swamp_fortified` |
+| forest | `taiga`, `taiga_fortified`, `halloween` |
+
+### What spawns in each petshop
+
+The `biome_profile` field on each test pool entry selects the spawn table from
+`data/ctov/petshop_spawns/<profile>.json` — see the **Per-biome spawn profiles** section
+above for the full list of mobs per profile. The cage counts per marker are fixed by
+`PetshopCompatStructurePoolElement.handleDataMarker()`:
+
+- `petshop_cage_*` → exactly 1 mob per marker (cage density is controlled by how many markers the .nbt places per cage)
+- `petshop_water` → 2 fish + seagrass/coral decoration
+- `petshop_chest` → DI loot table (only when DI is installed)
+
+### Why `/spawnpieces` won't work for this
+
+CommandStructures also has a `/spawnpieces` command that places a raw .nbt file directly.
+**Don't use it for testing the DI compat** — `/spawnpieces` bypasses the jigsaw pool
+system, so the .nbt gets placed by vanilla's `single_pool_element` logic, which does not
+process the `petshop_*` data markers. You'd get the building geometry (walls, cages,
+water, chest) but cages would be empty, chest would have no loot, and the fishtank would
+have no fish. `/spawnstructure` is the right tool because it runs the jigsaw pool system,
+which fires `ctov:petshop_compat`'s `handleDataMarker` override.
+
+### Isolation
+
+The 21 test pools live under `data/ctov/worldgen/template_pool/village/test/petshop/` and
+are **never referenced by any village's `house.json`**. They exist solely as targets for
+CommandStructures' `/spawnstructure` command. Normal village generation is completely
+unaffected — villages will continue to roll petshops from their patched `house.json`
+files exactly as before.
 
 ---
 
@@ -232,8 +342,9 @@ src/main/
     │   └── cherry.json
     ├── structures/village/<biome>/jobsite/
     │   └── petshop.nbt                            ← 21 NBTs (moved out of the add-on datapack)
-    └── worldgen/template_pool/village/<biome>/
-        └── house.json                             ← 21 patched pool files (petshop entries now use ctov:petshop_compat)
+    └── worldgen/template_pool/village/
+        ├── <biome>/house.json                     ← 21 patched pool files (petshop entries now use ctov:petshop_compat)
+        └── test/petshop/<biome>.json              ← 21 isolated test pools for CommandStructures /spawnstructure
 ```
 
 The `src/main/ctov-domestication-innovation-add-on/` datapack directory is left untouched

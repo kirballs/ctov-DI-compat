@@ -1,0 +1,16 @@
+{
+    "name": "ctov:village/test/petshop/savanna",
+    "fallback": "minecraft:village/common/empty",
+    "elements": [
+        {
+            "weight": 1,
+            "element": {
+                "element_type": "ctov:petshop_compat",
+                "projection": "rigid",
+                "location": "ctov:village/savanna/jobsite/petshop",
+                "processors": "ctov:detailing/savanna/house_yellow",
+                "biome_profile": "savanna"
+            }
+        }
+    ]
+}

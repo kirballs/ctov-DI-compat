@@ -1,0 +1,16 @@
+{
+    "name": "ctov:village/test/petshop/mushroom",
+    "fallback": "minecraft:village/common/empty",
+    "elements": [
+        {
+            "weight": 1,
+            "element": {
+                "element_type": "ctov:petshop_compat",
+                "projection": "rigid",
+                "location": "ctov:village/mushroom/jobsite/petshop",
+                "processors": "ctov:detailing/mushroom/brown_house",
+                "biome_profile": "mushroom"
+            }
+        }
+    ]
+}

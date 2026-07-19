@@ -1,0 +1,16 @@
+{
+    "name": "ctov:village/test/petshop/snowy_igloo",
+    "fallback": "minecraft:village/common/empty",
+    "elements": [
+        {
+            "weight": 1,
+            "element": {
+                "element_type": "ctov:petshop_compat",
+                "projection": "rigid",
+                "location": "ctov:village/snowy_igloo/jobsite/petshop",
+                "processors": "ctov:detailing/snowy/ice_igloo",
+                "biome_profile": "snowy"
+            }
+        }
+    ]
+}
