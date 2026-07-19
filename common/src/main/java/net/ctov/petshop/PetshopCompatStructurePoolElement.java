@@ -215,8 +215,8 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
                 Optional<PetshopSpawnProfile.Entry> matchedEntry = matchEntry(profile, type);
                 matchedEntry.ifPresent(entry -> {
                     int age = profile.ageFor(entry);
-                    if (age != 0) {
-                        mob.setAge(age);
+                    if (age != 0 && mob instanceof net.minecraft.world.entity.AgeableMob ageable) {
+                        ageable.setAge(age);
                     }
                 });
             }
@@ -225,7 +225,7 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
     }
 
     private Optional<PetshopSpawnProfile.Entry> matchEntry(PetshopSpawnProfile profile, EntityType<?> type) {
-        ResourceLocation actualId = BuiltInRegistries.ENTITY_TYPES.getKey(type);
+        ResourceLocation actualId = BuiltInRegistries.ENTITY_TYPE.getKey(type);
         if (actualId == null) {
             return Optional.empty();
         }
@@ -262,15 +262,6 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
         } catch (IOException e) {
             return null;
         }
-    }
-
-    private boolean isLootTablePresent(LevelAccessor levelAccessor, ResourceLocation lootTableId) {
-        if (!(levelAccessor instanceof ServerLevelAccessor serverLevelAccessor)) {
-            return false;
-        }
-        return serverLevelAccessor.getLevel().getServer().getLootData().getId(
-                net.minecraft.world.level.storage.loot.LootTable.TABLE_KEY.context()
-        ) != null || lootTableId != null;
     }
 
     public String toString() {

@@ -72,7 +72,7 @@ public record PetshopSpawnProfile(List<Entry> entries) {
         for (Entry entry : entries) {
             cumulative += entry.weight;
             if (roll < cumulative) {
-                EntityType<?> type = BuiltInRegistries.ENTITY_TYPES.get(entry.entity);
+                EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(entry.entity);
                 if (type != null) {
                     return Optional.of(type);
                 }
