@@ -1,0 +1,16 @@
+{
+  "name": "repurposed_structures:villages/swamp/houses",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 6,
+      "element": {
+        "element_type": "ctov:petshop_compat",
+        "projection": "rigid",
+        "location": "ctov:villages/swamp/petshop",
+        "processors": "repurposed_structures:villages/swamp/mossify",
+        "biome_profile": "swamp"
+      }
+    }
+  ]
+}

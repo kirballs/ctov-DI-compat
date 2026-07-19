@@ -81,10 +81,8 @@ PetshopCompatStructurePoolElement extends LegacySinglePoolElement
   ├─ handleDataMarker() dispatches on the marker's "metadata" string:
   │     petshop_water    → handleWater() → spawns from "fishtank" profile, places water/seagrass/coral
   │     petshop_chest    → handleChest()  → clears marker, binds chest-below to DI's loot table
-  │     petshop_cage_0   → handleCage(count = 1 + rand(0..1))
-  │     petshop_cage_1   → handleCage(count = 2 + rand(0..1))
-  │     petshop_cage_2   → handleCage(count = 1 + rand(0..1))
-  │     petshop_cage_3   → handleCage(count = 1)
+  │     petshop_cage*    → handleCage(count = 1) — matches any marker starting with "petshop_cage"
+  │                          Cage density is controlled by how many markers the NBT places per cage.
   ├─ handleCage() calls spawnFromProfile(biomeProfile) which:
   │     1. Looks up cached profile via ProfileLoader.get(profile)
   │     2. Rolls weighted entry from profile.entries
@@ -115,6 +113,22 @@ real-time years at 20 TPS, which no server will ever reach in a single session.
 
 The default value is `Entry.DEFAULT_AGE = -24000` in `PetshopSpawnProfile.java`.
 
+## Repurposed Structures biome mapping (rs_di_compat datapack)
+
+| RS village biome | `biome_profile` | Spawn profile JSON |
+|---|---|---|
+| `badlands` | `badlands` | `data/ctov/petshop_spawns/badlands.json` |
+| `bamboo` | `bamboo` | `data/ctov/petshop_spawns/bamboo.json` |
+| `birch` | `forest` | `data/ctov/petshop_spawns/forest.json` |
+| `cherry` | `cherry` | `data/ctov/petshop_spawns/cherry.json` |
+| `dark_forest` | `forest` | (same) |
+| `giant_taiga` | `forest` | (same) |
+| `jungle` | `jungle` | `data/ctov/petshop_spawns/jungle.json` |
+| `mountains` | `mountain` | `data/ctov/petshop_spawns/mountain.json` |
+| `mushroom` | `mushroom` | `data/ctov/petshop_spawns/mushroom.json` |
+| `oak` | `forest` | (same) |
+| `swamp` | `swamp` | `data/ctov/petshop_spawns/swamp.json` |
+
 ## Adding a new biome profile (for future mods)
 
 To wire up a new mod that adds a new village biome (e.g. `some_mod:cherry_grove_village`)
@@ -137,7 +151,8 @@ to use this compat:
    ```
 3. Ship the structure NBT at `data/some_mod/structures/village/cherry/jobsite/petshop.nbt`
    with the same data-marker conventions (`petshop_water`, `petshop_chest`,
-   `petshop_cage_0..3`).
+   `petshop_cage*`). Each `petshop_cage*` marker spawns exactly one entity;
+   place multiple markers inside larger cages for multi-pet cages.
 
 No Java code changes needed — the codec and dispatch are generic.
 

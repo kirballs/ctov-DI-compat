@@ -1,0 +1,16 @@
+{
+  "name": "repurposed_structures:villages/mushroom/houses",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 6,
+      "element": {
+        "element_type": "ctov:petshop_compat",
+        "projection": "rigid",
+        "location": "ctov:villages/mushroom/petshop",
+        "processors": "repurposed_structures:villages/mushroom/general_randomizer",
+        "biome_profile": "mushroom"
+      }
+    }
+  ]
+}
