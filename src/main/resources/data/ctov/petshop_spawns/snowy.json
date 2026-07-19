@@ -1,0 +1,10 @@
+{
+  "_comment": "Snowy village petshop spawns. Used by: snowy_igloo AND christmas (merged per user instruction). Winter-themed pets; cage 2 stock biased toward cold-biome animals.",
+  "entries": [
+    { "entity": "minecraft:wolf",      "weight": 30, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:cat",       "weight": 20, "baby": false },
+    { "entity": "minecraft:fox",       "weight": 25, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:polar_bear","weight": 15, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:rabbit",    "weight": 10, "baby": true,  "age": -24000 }
+  ]
+}

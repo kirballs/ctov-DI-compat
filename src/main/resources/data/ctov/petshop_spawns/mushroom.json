@@ -1,0 +1,9 @@
+{
+  "_comment": "Mushroom village petshop spawns. Used by: mushroom. Mushroom-island themed pets — mooshrooms and the only place bats appear in a petshop.",
+  "entries": [
+    { "entity": "minecraft:mooshroom", "weight": 50, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:cow",        "weight": 20, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:cat",        "weight": 20, "baby": false },
+    { "entity": "minecraft:bat",        "weight": 10, "baby": false }
+  ]
+}

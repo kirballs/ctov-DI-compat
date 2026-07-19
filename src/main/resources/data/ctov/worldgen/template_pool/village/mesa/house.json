@@ -230,10 +230,11 @@
 		{
 			"weight": 5,
 			"element": {
-				"element_type": "minecraft:single_pool_element",
+				"element_type": "ctov:petshop_compat",
 				"projection": "rigid",
 				"location": "ctov:village/mesa/jobsite/petshop",
-				"processors": "ctov:detailing/mesa/house"
+				"processors": "ctov:detailing/mesa/house",
+				"biome_profile": "badlands"
 			}
 		},
 		{

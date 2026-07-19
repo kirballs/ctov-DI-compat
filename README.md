@@ -78,10 +78,10 @@ Some fantastic footage from the mod. All pictures are taken with complementary s
 - [✓] [**Incubation**](https://modrinth.com/datapack/ctov-incubation-add-on)
 - [✓] [**Chef's delight**](https://modrinth.com/datapack/ctov-chefs-delight-add-on)
 - [✓] [**Beautify**](https://modrinth.com/datapack/ctov-beautify-add-on)
+- [✓] [**Domestication Innovation**](docs/DI_COMPAT_PETSHOP.md) (per-biome petshop compat — see [`docs/DI_COMPAT_PETSHOP.md`](docs/DI_COMPAT_PETSHOP.md))
 - [ ] Drunken mug
 - [ ] Pneumatic craft
 - [ ] Advance peripheral
-- [ ] Domestication Innovation
 - [ ] Questager
 - [ ] Vampirism
 - [ ] Wizards

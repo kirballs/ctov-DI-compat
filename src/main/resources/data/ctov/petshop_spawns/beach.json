@@ -1,0 +1,9 @@
+{
+  "_comment": "Beach village petshop spawns. Used by: beach. Beach-themed pets.",
+  "entries": [
+    { "entity": "minecraft:turtle",   "weight": 30, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:cat",      "weight": 25, "baby": false },
+    { "entity": "minecraft:parrot",   "weight": 25, "baby": false },
+    { "entity": "minecraft:rabbit",   "weight": 20, "baby": true,  "age": -24000 }
+  ]
+}

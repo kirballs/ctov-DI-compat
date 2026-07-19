@@ -1,0 +1,10 @@
+{
+  "_comment": "Badlands/mesa village petshop spawns. Used by: mesa, mesa_fortified.",
+  "entries": [
+    { "entity": "minecraft:cat",         "weight": 25, "baby": false },
+    { "entity": "minecraft:llama",       "weight": 30, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:rabbit",      "weight": 20, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:armadillo",   "weight": 15, "baby": false },
+    { "entity": "minecraft:parrot",      "weight": 10, "baby": false }
+  ]
+}

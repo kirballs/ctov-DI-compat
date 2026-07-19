@@ -2,6 +2,7 @@ package com.choicetheorem.ctov;
 
 import java.util.stream.Collectors;
 
+import com.choicetheorem.ctov.registry.CTOVRegistry;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -24,6 +25,11 @@ public class ctov
 
     public ctov ()
     {
+        // Register DI-petshop-compat pool element type (ctov:petshop_compat) on the mod bus.
+        // This must happen during mod construction so the type is available when village
+        // pools are loaded on world load.
+        CTOVRegistry.POOL_ELEMENTS.register(FMLJavaModLoadingContext.get().getModEventBus());
+
         // Register the setup method for modloading
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         // Register the enqueueIMC method for modloading

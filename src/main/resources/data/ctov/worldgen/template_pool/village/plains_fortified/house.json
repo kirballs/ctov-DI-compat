@@ -779,28 +779,31 @@
 		{
 			"weight": 5,
 			"element": {
-				"element_type": "minecraft:single_pool_element",
+				"element_type": "ctov:petshop_compat",
 				"projection": "rigid",
 				"location": "ctov:village/plains_fortified/jobsite/petshop",
-				"processors": "ctov:detailing/plains/red_house"
+				"processors": "ctov:detailing/plains/red_house",
+				"biome_profile": "plains"
 			}
 		},
 		{
 			"weight": 5,
 			"element": {
-				"element_type": "minecraft:single_pool_element",
+				"element_type": "ctov:petshop_compat",
 				"projection": "rigid",
 				"location": "ctov:village/plains_fortified/jobsite/petshop",
-				"processors": "ctov:detailing/plains/pink_house"
+				"processors": "ctov:detailing/plains/pink_house",
+				"biome_profile": "plains"
 			}
 		},
 		{
 			"weight": 5,
 			"element": {
-				"element_type": "minecraft:single_pool_element",
+				"element_type": "ctov:petshop_compat",
 				"projection": "rigid",
 				"location": "ctov:village/plains_fortified/jobsite/petshop",
-				"processors": "ctov:detailing/plains/quartz_house"
+				"processors": "ctov:detailing/plains/quartz_house",
+				"biome_profile": "plains"
 			}
 		},
 		{

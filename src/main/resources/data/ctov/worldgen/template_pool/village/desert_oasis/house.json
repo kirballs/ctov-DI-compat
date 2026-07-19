@@ -8,7 +8,7 @@
 				"element_type": "minecraft:single_pool_element",
 				"projection": "rigid",
 				"location": "ctov:village/desert_oasis/house/small_1",
-				"processors": "ctov:detailing/desert/village"              
+				"processors": "ctov:detailing/desert/village"
 			}
 		},
 		{
@@ -302,10 +302,11 @@
 		{
 			"weight": 5,
 			"element": {
-				"element_type": "minecraft:single_pool_element",
+				"element_type": "ctov:petshop_compat",
 				"projection": "rigid",
 				"processors": "ctov:detailing/desert/village",
-				"location": "ctov:village/desert_oasis/jobsite/petshop"
+				"location": "ctov:village/desert_oasis/jobsite/petshop",
+				"biome_profile": "desert"
 			}
 		},
 		{

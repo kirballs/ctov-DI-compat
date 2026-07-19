@@ -1,5 +1,5 @@
 {
-	"name":"ctov:village/jungle/house",
+	"name": "ctov:village/jungle/house",
 	"fallback": "ctov:village/jungle/deco",
 	"elements": [
 		{
@@ -284,10 +284,11 @@
 		{
 			"weight": 5,
 			"element": {
-				"element_type": "minecraft:single_pool_element",
+				"element_type": "ctov:petshop_compat",
 				"projection": "rigid",
 				"processors": "minecraft:empty",
-				"location": "ctov:village/jungle/jobsite/petshop"
+				"location": "ctov:village/jungle/jobsite/petshop",
+				"biome_profile": "jungle"
 			}
 		},
 		{

@@ -59,7 +59,7 @@
 		{
 			"weight": 10,
 			"element": {
-			"element_type": "minecraft:single_pool_element",
+				"element_type": "minecraft:single_pool_element",
 				"projection": "rigid",
 				"location": "ctov:village/beach/house/mid_2",
 				"processors": "ctov:detailing/beach/house"
@@ -79,7 +79,7 @@
 			"element": {
 				"element_type": "minecraft:single_pool_element",
 				"projection": "rigid",
-			"location": "ctov:village/beach/house/big_2",
+				"location": "ctov:village/beach/house/big_2",
 				"processors": "ctov:detailing/beach/house"
 			}
 		},
@@ -293,10 +293,11 @@
 		{
 			"weight": 5,
 			"element": {
-				"element_type": "minecraft:single_pool_element",
+				"element_type": "ctov:petshop_compat",
 				"projection": "rigid",
 				"location": "ctov:village/beach/jobsite/petshop",
-				"processors": "ctov:detailing/beach/house"
+				"processors": "ctov:detailing/beach/house",
+				"biome_profile": "beach"
 			}
 		},
 		{

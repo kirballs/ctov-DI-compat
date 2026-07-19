@@ -1,0 +1,9 @@
+{
+  "_comment": "Swamp village petshop spawns. Used by: swamp, swamp_fortified. Kept as a separate profile per user instruction (not merged with forest).",
+  "entries": [
+    { "entity": "minecraft:frog",     "weight": 40, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:cat",      "weight": 25, "baby": false },
+    { "entity": "minecraft:axolotl",  "weight": 20, "baby": false },
+    { "entity": "minecraft:tadpole",  "weight": 15, "baby": false }
+  ]
+}

@@ -8,7 +8,7 @@
 				"element_type": "minecraft:single_pool_element",
 				"projection": "rigid",
 				"location": "ctov:village/snowy_igloo/house/small_1",
-				"processors": "ctov:detailing/snowy/ice_igloo"              
+				"processors": "ctov:detailing/snowy/ice_igloo"
 			}
 		},
 		{
@@ -125,7 +125,7 @@
 				"element_type": "minecraft:single_pool_element",
 				"projection": "rigid",
 				"location": "ctov:village/snowy_igloo/house/small_1",
-				"processors": "ctov:detailing/snowy/igloo"              
+				"processors": "ctov:detailing/snowy/igloo"
 			}
 		},
 		{
@@ -491,19 +491,21 @@
 		{
 			"weight": 5,
 			"element": {
-				"element_type": "minecraft:single_pool_element",
+				"element_type": "ctov:petshop_compat",
 				"projection": "rigid",
 				"processors": "ctov:detailing/snowy/ice_igloo",
-				"location": "ctov:village/snowy_igloo/jobsite/petshop"
+				"location": "ctov:village/snowy_igloo/jobsite/petshop",
+				"biome_profile": "snowy"
 			}
 		},
 		{
 			"weight": 5,
 			"element": {
-				"element_type": "minecraft:single_pool_element",
+				"element_type": "ctov:petshop_compat",
 				"projection": "rigid",
 				"processors": "ctov:detailing/snowy/igloo",
-				"location": "ctov:village/snowy_igloo/jobsite/petshop"
+				"location": "ctov:village/snowy_igloo/jobsite/petshop",
+				"biome_profile": "snowy"
 			}
 		},
 		{

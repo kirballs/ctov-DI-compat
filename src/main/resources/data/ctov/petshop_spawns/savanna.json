@@ -1,0 +1,10 @@
+{
+  "_comment": "Savanna village petshop spawns. Used by: savanna, savanna_na. Themed around savanna-dwelling pets.",
+  "entries": [
+    { "entity": "minecraft:cat",         "weight": 25, "baby": false },
+    { "entity": "minecraft:llama",       "weight": 25, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:parrot",      "weight": 20, "baby": false },
+    { "entity": "minecraft:donkey",      "weight": 15, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:armadillo",   "weight": 15, "baby": false }
+  ]
+}

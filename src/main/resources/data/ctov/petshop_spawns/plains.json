@@ -1,0 +1,9 @@
+{
+  "_comment": "Plains village petshop spawns. Used by: plains, plains_fortified. Cage 0 = small pets (wolf/cat/rabbit); cage 1 = small pets; cage 2 = small pets; cage 3 = single parrot.",
+  "entries": [
+    { "entity": "minecraft:wolf",    "weight": 30, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:cat",     "weight": 25, "baby": false },
+    { "entity": "minecraft:rabbit",  "weight": 25, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:parrot",  "weight": 20, "baby": false }
+  ]
+}
