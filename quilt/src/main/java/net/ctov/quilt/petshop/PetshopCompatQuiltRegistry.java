@@ -2,6 +2,7 @@ package net.ctov.quilt.petshop;
 
 import net.ctov.petshop.PetshopCompatRegistries;
 import net.ctov.petshop.PetshopCompatStructurePoolElement;
+import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
@@ -25,7 +26,7 @@ public final class PetshopCompatQuiltRegistry {
             ResourceLocation id = new ResourceLocation("ctov", "petshop_compat");
             StructurePoolElementType<PetshopCompatStructurePoolElement> type =
                     () -> PetshopCompatStructurePoolElement.CODEC;
-            StructurePoolElementType<?> registered = BuiltInRegistries.register(
+            StructurePoolElementType<?> registered = Registry.register(
                     BuiltInRegistries.STRUCTURE_POOL_ELEMENT,
                     id,
                     type);

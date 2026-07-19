@@ -2,6 +2,7 @@ package net.ctov.fabric.petshop;
 
 import net.ctov.petshop.PetshopCompatRegistries;
 import net.ctov.petshop.PetshopCompatStructurePoolElement;
+import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -35,7 +36,7 @@ public final class PetshopCompatFabricRegistry {
             ResourceLocation id = new ResourceLocation("ctov", "petshop_compat");
             StructurePoolElementType<PetshopCompatStructurePoolElement> type =
                     () -> PetshopCompatStructurePoolElement.CODEC;
-            StructurePoolElementType<?> registered = BuiltInRegistries.register(
+            StructurePoolElementType<?> registered = Registry.register(
                     BuiltInRegistries.STRUCTURE_POOL_ELEMENT,
                     id,
                     type);
