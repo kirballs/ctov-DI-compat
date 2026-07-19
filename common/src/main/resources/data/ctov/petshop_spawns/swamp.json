@@ -1,0 +1,9 @@
+{
+  "_comment": "Swamp village petshop spawns. Used by: swamp, swamp_fortified. Kept as a separate profile per user instruction (not merged with forest). All cage markers in this biome roll against this same weighted list; only the per-cage spawn count varies (cage_0/2: 1-2, cage_1: 2-3, cage_3: 1). Aquatic mobs (axolotl, etc.) live in the fishtank profile instead — dry cages here are land-based only.",
+  "entries": [
+    { "entity": "minecraft:frog",   "weight": 40, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:cat",    "weight": 25, "baby": false },
+    { "entity": "minecraft:pig",    "weight": 20, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:rabbit", "weight": 15, "baby": true,  "age": -24000 }
+  ]
+}

@@ -22,28 +22,31 @@
 		{
 			"weight": 5,
 			"element": {
-				"element_type": "minecraft:single_pool_element",
+				"element_type": "ctov:petshop_compat",
 				"projection": "rigid",
 				"processors": "ctov:village/savanna/house_orange",
-				"location":"ctov:village/savanna/jobsite/petshop"
+				"location": "ctov:village/savanna/jobsite/petshop",
+				"biome_profile": "ctov:savanna"
 			}
 		},
 		{
 			"weight": 5,
 			"element": {
-				"element_type": "minecraft:single_pool_element",
+				"element_type": "ctov:petshop_compat",
 				"projection": "rigid",
 				"processors": "ctov:village/savanna/house_red",
-				"location":"ctov:village/savanna/jobsite/petshop"
+				"location": "ctov:village/savanna/jobsite/petshop",
+				"biome_profile": "ctov:savanna"
 			}
 		},
 		{
 			"weight": 5,
 			"element": {
-				"element_type": "minecraft:single_pool_element",
+				"element_type": "ctov:petshop_compat",
 				"projection": "rigid",
 				"processors": "ctov:village/savanna/house_yellow",
-				"location":"ctov:village/savanna/jobsite/petshop"
+				"location": "ctov:village/savanna/jobsite/petshop",
+				"biome_profile": "ctov:savanna"
 			}
 		}
 	]

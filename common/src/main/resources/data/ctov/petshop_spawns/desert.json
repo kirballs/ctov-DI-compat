@@ -1,0 +1,10 @@
+{
+  "_comment": "Desert village petshop spawns. Used by: desert, desert_oasis. Themed around desert-dwelling pets.",
+  "entries": [
+    { "entity": "minecraft:cat",         "weight": 30, "baby": false },
+    { "entity": "minecraft:rabbit",      "weight": 25, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:llama",       "weight": 20, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:parrot",      "weight": 15, "baby": false },
+    { "entity": "minecraft:armadillo",   "weight": 10, "baby": false }
+  ]
+}

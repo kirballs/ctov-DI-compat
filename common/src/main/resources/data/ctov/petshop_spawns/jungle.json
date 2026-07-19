@@ -1,0 +1,9 @@
+{
+  "_comment": "Jungle village petshop spawns. Used by: jungle, jungle_tree. Kept as a separate profile per user instruction (not merged with forest).",
+  "entries": [
+    { "entity": "minecraft:parrot",   "weight": 35, "baby": false },
+    { "entity": "minecraft:ocelot",   "weight": 25, "baby": false },
+    { "entity": "minecraft:frog",     "weight": 20, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:cat",      "weight": 20, "baby": false }
+  ]
+}

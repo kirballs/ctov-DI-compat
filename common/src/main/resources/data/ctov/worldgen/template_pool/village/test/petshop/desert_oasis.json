@@ -1,0 +1,16 @@
+{
+    "name": "ctov:village/test/petshop/desert_oasis",
+    "fallback": "minecraft:village/common/empty",
+    "elements": [
+        {
+            "weight": 1,
+            "element": {
+                "element_type": "ctov:petshop_compat",
+                "projection": "rigid",
+                "location": "ctov:village/desert_oasis/jobsite/petshop",
+                "processors": "ctov:village/desert_oasis/house",
+                "biome_profile": "ctov:desert"
+            }
+        }
+    ]
+}

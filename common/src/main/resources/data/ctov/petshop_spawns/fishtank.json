@@ -1,0 +1,10 @@
+{
+  "_comment": "Fishtank spawns — used for the petshop_water marker in ALL biomes (the fishtank is shared décor, not biome-specific). Contains only aquatic mobs that look at home in a small tank.",
+  "entries": [
+    { "entity": "minecraft:tropical_fish", "weight": 35, "baby": false },
+    { "entity": "minecraft:cod",           "weight": 20, "baby": false },
+    { "entity": "minecraft:salmon",        "weight": 15, "baby": false },
+    { "entity": "minecraft:pufferfish",    "weight": 15, "baby": false },
+    { "entity": "minecraft:axolotl",       "weight": 15, "baby": false }
+  ]
+}

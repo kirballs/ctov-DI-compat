@@ -1,0 +1,16 @@
+{
+    "name": "ctov:village/test/petshop/taiga",
+    "fallback": "minecraft:village/common/empty",
+    "elements": [
+        {
+            "weight": 1,
+            "element": {
+                "element_type": "ctov:petshop_compat",
+                "projection": "rigid",
+                "location": "ctov:village/taiga/jobsite/petshop",
+                "processors": "ctov:village/taiga/house",
+                "biome_profile": "ctov:forest"
+            }
+        }
+    ]
+}

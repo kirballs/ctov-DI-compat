@@ -1,0 +1,9 @@
+{
+  "_comment": "Cherry village petshop spawns. RESERVED — CTOV 1.20.1 has no cherry village variant. This profile is here for forward compatibility with future mods that add cherry-blossom village biomes. Defaults to a cat-heavy mix reminiscent of the cherry-grove vibe.",
+  "entries": [
+    { "entity": "minecraft:cat",       "weight": 35, "baby": false },
+    { "entity": "minecraft:rabbit",    "weight": 25, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:bee",       "weight": 20, "baby": false },
+    { "entity": "minecraft:parrot",    "weight": 20, "baby": false }
+  ]
+}

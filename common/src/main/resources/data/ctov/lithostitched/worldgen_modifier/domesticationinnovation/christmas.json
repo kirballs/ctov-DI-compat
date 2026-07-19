@@ -6,15 +6,15 @@
 			{
 				"type": "lithostitched:mod_loaded",
 				"mod_id": "domesticationinnovation"
-    		},
-    		{
-    			"type": "lithostitched:mod_loaded",
-    			"mod_id": "rats"
 			},
-		  	{
+			{
+				"type": "lithostitched:mod_loaded",
+				"mod_id": "rats"
+			},
+			{
 				"type": "lithostitched:mod_loaded",
 				"mod_id": "simplycats"
-		  	}
+			}
 		]
 	},
 	"template_pools": "ctov:village/christmas/house",
@@ -22,10 +22,11 @@
 		{
 			"weight": 5,
 			"element": {
-				"element_type": "minecraft:single_pool_element",
+				"element_type": "ctov:petshop_compat",
 				"projection": "rigid",
 				"processors": "ctov:village/christmas/house",
-				"location":"ctov:village/christmas/jobsite/petshop"
+				"location": "ctov:village/christmas/jobsite/petshop",
+				"biome_profile": "ctov:snowy"
 			}
 		}
 	]

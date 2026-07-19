@@ -22,10 +22,11 @@
 		{
 			"weight": 5,
 			"element": {
-				"element_type": "minecraft:single_pool_element",
+				"element_type": "ctov:petshop_compat",
 				"projection": "rigid",
 				"processors": "ctov:village/mountain_alpine/house",
-				"location":"ctov:village/mountain_alpine/jobsite/petshop"
+				"location": "ctov:village/mountain_alpine/jobsite/petshop",
+				"biome_profile": "ctov:mountain"
 			}
 		}
 	]

@@ -72,3 +72,18 @@ config = "ctov-common.mixins.json"
     versionRange="[1.20,1.21)"
     ordering="NONE"
     side="BOTH"
+# Soft dependency on Domestication Innovation. CTOV ships its own petshop
+# buildings (.nbt files) and DI's loot table resolves automatically when DI is
+# loaded. The custom ctov:petshop_compat StructurePoolElementType registered
+# by this mod is what makes the petshop_water / petshop_chest / petshop_cage_0..3
+# data markers inside those .nbt files actually spawn entities and décor —
+# without it, the markers are silently cleared to air by vanilla
+# single_pool_element. Marked as soft (mandatory=false) so the mod loads with
+# or without DI; the Lithostitched modifier JSONs that reference the petshop
+# buildings are themselves gated on mod_loaded:domesticationinnovation.
+[[dependencies.ctov]]
+    modId="domesticationinnovation"
+    mandatory=false
+    versionRange="[1.7.0,)"
+    ordering="AFTER"
+    side="BOTH"

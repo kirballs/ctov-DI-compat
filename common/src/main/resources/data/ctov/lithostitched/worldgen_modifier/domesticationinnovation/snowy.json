@@ -22,19 +22,21 @@
 		{
 			"weight": 5,
 			"element": {
-				"element_type": "minecraft:single_pool_element",
+				"element_type": "ctov:petshop_compat",
 				"projection": "rigid",
 				"processors": "ctov:village/snowy/house_ice",
-				"location":"ctov:village/snowy_igloo/jobsite/petshop"
+				"location": "ctov:village/snowy_igloo/jobsite/petshop",
+				"biome_profile": "ctov:snowy"
 			}
 		},
 		{
 			"weight": 5,
 			"element": {
-				"element_type": "minecraft:single_pool_element",
+				"element_type": "ctov:petshop_compat",
 				"projection": "rigid",
 				"processors": "ctov:village/snowy/house_snow",
-				"location":"ctov:village/snowy_igloo/jobsite/petshop"
+				"location": "ctov:village/snowy_igloo/jobsite/petshop",
+				"biome_profile": "ctov:snowy"
 			}
 		}
 	]

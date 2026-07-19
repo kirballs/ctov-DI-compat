@@ -11,10 +11,10 @@
 				"type": "lithostitched:mod_loaded",
 				"mod_id": "rats"
 			},
-		  	{
+			{
 				"type": "lithostitched:mod_loaded",
 				"mod_id": "simplycats"
-		  	}
+			}
 		]
 	},
 	"template_pools": "ctov:village/beach/house",
@@ -22,10 +22,11 @@
 		{
 			"weight": 5,
 			"element": {
-				"element_type": "minecraft:single_pool_element",
+				"element_type": "ctov:petshop_compat",
 				"projection": "rigid",
 				"processors": "ctov:village/beach/house",
-				"location":"ctov:village/beach/jobsite/petshop"
+				"location": "ctov:village/beach/jobsite/petshop",
+				"biome_profile": "ctov:beach"
 			}
 		}
 	]

@@ -1,0 +1,10 @@
+{
+  "_comment": "Underground village petshop spawns. Used by: underground. Reserved profile — CTOV 1.20.1 underground villages do not currently include a petshop in their house.json, but this profile is here for completeness and to support future variants.",
+  "entries": [
+    { "entity": "minecraft:bat",        "weight": 30, "baby": false },
+    { "entity": "minecraft:cat",        "weight": 25, "baby": false },
+    { "entity": "minecraft:axolotl",    "weight": 20, "baby": false },
+    { "entity": "minecraft:glow_squid", "weight": 15, "baby": false },
+    { "entity": "minecraft:wolf",       "weight": 10, "baby": true,  "age": -24000 }
+  ]
+}
