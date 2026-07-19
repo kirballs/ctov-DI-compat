@@ -38,6 +38,9 @@ public final class PetshopCompatNeoRegistry {
      * registered on the mod event bus.
      */
     public static void init() {
-        PetshopCompatRegistries.setTypeSupplier(PETSHOP_COMPAT);
+        // Wrap with a lambda because RegistryObject<StructurePoolElementType<...>>
+        // is not directly convertible to Supplier<StructurePoolElementType<?>>
+        // due to Java generics invariance.
+        PetshopCompatRegistries.setTypeSupplier(() -> PETSHOP_COMPAT.get());
     }
 }

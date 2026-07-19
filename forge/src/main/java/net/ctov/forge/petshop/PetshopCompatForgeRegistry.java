@@ -40,8 +40,9 @@ public final class PetshopCompatForgeRegistry {
      * registered on the mod event bus.
      */
     public static void init() {
-        // RegistryObject is itself a Supplier<StructurePoolElementType<...>>,
-        // so we can pass it directly.
-        PetshopCompatRegistries.setTypeSupplier(PETSHOP_COMPAT);
+        // Wrap with a lambda because RegistryObject<StructurePoolElementType<...>>
+        // is not directly convertible to Supplier<StructurePoolElementType<?>>
+        // due to Java generics invariance.
+        PetshopCompatRegistries.setTypeSupplier(() -> PETSHOP_COMPAT.get());
     }
 }
