@@ -4,8 +4,8 @@ import net.ctov.petshop.PetshopCompatRegistries;
 import net.ctov.petshop.PetshopCompatStructurePoolElement;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.RegistryObject;
 
 /**
  * NeoForge-side registration of the {@code ctov:petshop_compat} structure
@@ -29,8 +29,21 @@ public final class PetshopCompatNeoRegistry {
     public static final DeferredRegister<StructurePoolElementType<?>> POOL_ELEMENTS =
             DeferredRegister.create(Registries.STRUCTURE_POOL_ELEMENT, "ctov");
 
-    public static final RegistryObject<StructurePoolElementType<PetshopCompatStructurePoolElement>> PETSHOP_COMPAT =
-            POOL_ELEMENTS.register("petshop_compat", () -> () -> PetshopCompatStructurePoolElement.CODEC);
+    public static final DeferredHolder<StructurePoolElementType<?>, StructurePoolElementType<PetshopCompatStructurePoolElement>> PETSHOP_COMPAT =
+            POOL_ELEMENTS.register("petshop_compat", PetshopCompatNeoRegistry::createPetshopCompatType);
+
+    /**
+     * Build the StructurePoolElementType that backs {@code ctov:petshop_compat}.
+     * Pulled into a named method so Java's type inference picks up the specific
+     * {@code StructurePoolElementType<PetshopCompatStructurePoolElement>} type
+     * parameter — the bare lambda {@code () -> () -> CODEC} was ambiguous and
+     * the compiler tried to infer it as the bounded raw type, causing a
+     * Codec<PetshopCompatStructurePoolElement> → Codec<StructurePoolElement>
+     * conversion error.
+     */
+    private static StructurePoolElementType<PetshopCompatStructurePoolElement> createPetshopCompatType() {
+        return () -> PetshopCompatStructurePoolElement.CODEC;
+    }
 
     /**
      * Publish the registry object to the common accessor. Must be called from
