@@ -1,0 +1,10 @@
+{
+  "_comment": "Bamboo village petshop spawns. Used by: RepurposedStructures bamboo village. Pandas and parrots are the signature mobs; rabbits and wolves round out the pool.",
+  "entries": [
+    { "entity": "minecraft:parrot",  "weight": 25, "baby": false },
+    { "entity": "minecraft:rabbit",  "weight": 25, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:wolf",    "weight": 20, "baby": true,  "age": -24000 },
+    { "entity": "minecraft:cat",     "weight": 20, "baby": false },
+    { "entity": "minecraft:panda",   "weight": 10, "baby": true,  "age": -24000 }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "repurposed_structures:villages/cherry/houses",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 12,
+      "element": {
+        "element_type": "ctov:petshop_compat",
+        "projection": "rigid",
+        "location": "ctov:villages/cherry/petshop",
+        "processors": "repurposed_structures:villages/cherry/mossify",
+        "biome_profile": "cherry"
+      }
+    }
+  ]
+}
