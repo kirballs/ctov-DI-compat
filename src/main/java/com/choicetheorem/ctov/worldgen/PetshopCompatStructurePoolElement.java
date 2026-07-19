@@ -1,5 +1,6 @@
 package com.choicetheorem.ctov.worldgen;
 
+import com.choicetheorem.ctov.registry.CTOVRegistry;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.gson.Gson;
@@ -22,6 +23,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BaseCoralPlantTypeBlock;
 import net.minecraft.world.level.block.Rotation;
@@ -136,19 +138,25 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
             RandomSource random,
             BoundingBox box) {
 
+        // blockInfo.nbt() carries the template-local metadata (the data-marker string);
+        // it is independent of placement and is safe to read here. The `pos` parameter
+        // is the world-space position of the marker — that's what we must use for any
+        // block/entity placement, because blockInfo.pos() is template-local and would
+        // land spawns and block writes at the wrong coordinates when the structure is
+        // not placed at the world origin.
         String marker = blockInfo.nbt().getString("metadata");
         switch (marker) {
-            case "petshop_water" -> handleWater(level, blockInfo, random);
-            case "petshop_chest" -> handleChest(level, blockInfo, random);
-            case "petshop_cage_0" -> handleCage(level, blockInfo, random, 1 + random.nextInt(2));
-            case "petshop_cage_1" -> handleCage(level, blockInfo, random, 2 + random.nextInt(2));
-            case "petshop_cage_2" -> handleCage(level, blockInfo, random, 1 + random.nextInt(2));
-            case "petshop_cage_3" -> handleCage(level, blockInfo, random, 1);
+            case "petshop_water" -> handleWater(level, pos, random);
+            case "petshop_chest" -> handleChest(level, pos, random);
+            case "petshop_cage_0" -> handleCage(level, pos, random, 1 + random.nextInt(2));
+            case "petshop_cage_1" -> handleCage(level, pos, random, 2 + random.nextInt(2));
+            case "petshop_cage_2" -> handleCage(level, pos, random, 1 + random.nextInt(2));
+            case "petshop_cage_3" -> handleCage(level, pos, random, 1);
             default -> { /* not our marker — leave the structure block in place */ }
         }
     }
 
-    private void handleWater(LevelAccessor level, StructureTemplate.StructureBlockInfo info, RandomSource random) {
+    private void handleWater(LevelAccessor level, BlockPos pos, RandomSource random) {
         // Mirror DI's decoration behavior so the fishtank looks the same regardless of which
         // pool element type placed it.
         BlockState state = Blocks.WATER.defaultBlockState();
@@ -166,25 +174,25 @@ public class PetshopCompatStructurePoolElement extends LegacySinglePoolElement {
             state = coralBlock.defaultBlockState().setValue(BaseCoralPlantTypeBlock.WATERLOGGED, true);
         }
         // Always spawn fishtank entities first (so they end up inside the water block).
-        spawnFromProfile(level, info.pos(), random, "fishtank", 2);
-        level.setBlock(info.pos(), state, 2);
+        spawnFromProfile(level, pos, random, "fishtank", 2);
+        level.setBlock(pos, state, 2);
     }
 
-    private void handleChest(LevelAccessor level, StructureTemplate.StructureBlockInfo info, RandomSource random) {
+    private void handleChest(LevelAccessor level, BlockPos pos, RandomSource random) {
         // Clear the structure-block marker, then bind the block below (where the actual chest
         // was placed during NBT instantiation) to DI's petshop chest loot table.
-        level.setBlock(info.pos(), Blocks.AIR.defaultBlockState(), 2);
+        level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
         if (level instanceof ServerLevelAccessor serverLevel) {
             // RandomizableContainerBlockEntity.setLootTable gracefully no-ops if the loot table
             // ID is not resolvable, so missing DI does not crash worldgen.
-            RandomizableContainerBlockEntity.setLootTable(level, random, info.pos().below(), DI_PETSHOP_CHEST);
+            RandomizableContainerBlockEntity.setLootTable(level, random, pos.below(), DI_PETSHOP_CHEST);
         }
     }
 
-    private void handleCage(LevelAccessor level, StructureTemplate.StructureBlockInfo info,
+    private void handleCage(LevelAccessor level, BlockPos pos,
                             RandomSource random, int count) {
-        spawnFromProfile(level, info.pos(), random, biomeProfile, count);
-        level.setBlock(info.pos(), Blocks.AIR.defaultBlockState(), 2);
+        spawnFromProfile(level, pos, random, biomeProfile, count);
+        level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
     }
 
     /**

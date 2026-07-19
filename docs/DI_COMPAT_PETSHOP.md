@@ -54,7 +54,7 @@ This fork closes that gap by:
 **Required:**
 
 - Minecraft 1.20.1
-- Forge 46.x or 47.x (any version that loads MC 1.20.1)
+- Forge 47.2.0 (or any 47.x — Forge 47 is the 1.20.1 line)
 - ChoiceTheorem's Overhauled Village — this fork's jar (replaces the upstream CTOV jar)
 
 **Recommended:**

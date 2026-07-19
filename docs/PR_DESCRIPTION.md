@@ -134,8 +134,9 @@ See `docs/DI_COMPAT_PETSHOP.md` for the full schema and override instructions.
 
 ## Build instructions
 
-The branch builds against CTOV v3.3.1's existing setup — ForgeGradle 6, MC 1.20, Forge
-46.0.12, Java 17. No build-system changes were made beyond the version bump.
+The branch builds against ForgeGradle 6, MC 1.20.1, Forge 47.2.0, Java 17.
+No build-system changes were made beyond bumping the MC / Forge coordinates
+to align with the actual supported target.
 
 To produce the jar locally:
 
