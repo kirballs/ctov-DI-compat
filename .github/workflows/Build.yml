@@ -24,10 +24,17 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x gradlew
 
-    - name: Build with Gradle
+    - name: Build CTOV jar with Gradle
       run: ./gradlew build --stacktrace
       env:
         GRADLE_OPTS: "-Xmx4G -Dorg.gradle.daemon=false"
+
+    # The RS × DI petshop compat datapack is intentionally kept OUT of the CTOV
+    # jar — RS integration is delivered as a separate zip datapack so the jar
+    # build never depends on any RS-side NBT files being present. The script
+    # below just zips rs_di_compat/ into a ready-to-install datapack.
+    - name: Package rs_di_compat datapack zip
+      run: bash scripts/package_rs_di_compat.sh
 
     - name: Upload Forge jar
       uses: actions/upload-artifact@v4
@@ -50,10 +57,18 @@ jobs:
         path: fabric/build/libs/*fabric*.jar
         if-no-files-found: warn
 
-    - name: Upload all jars
+    - name: Upload RS × DI compat datapack zip
+      uses: actions/upload-artifact@v4
+      with:
+        name: rs-di-compat-datapack
+        path: rs_di_compat/build/*.zip
+        if-no-files-found: error
+
+    - name: Upload all jars + datapack
       uses: actions/upload-artifact@v4
       with:
         name: ctov-di-compat-all-jars
         path: |
           */build/libs/*.jar
+          rs_di_compat/build/*.zip
         if-no-files-found: warn

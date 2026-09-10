@@ -97,7 +97,7 @@ to the profiles is safe.
 The chest loot table resolves automatically via CTOV's existing `.nbt` setup when DI is
 loaded — the `petshop_chest` handler is defensive (no-op if DI is absent).
 
-### 4. Repurposed Structures × DI petshop compat datapack
+### 4. Repurposed Structures × DI petshop compat datapack (shipped as a separate zip)
 
 The `rs_di_compat/` folder is a standalone datapack (with its own `pack.mcmeta`) that
 adds DI petshop buildings to all 11 Repurposed Structures village variants
@@ -105,8 +105,26 @@ adds DI petshop buildings to all 11 Repurposed Structures village variants
 mushroom, oak, swamp). It uses the same `ctov:petshop_compat` pool element type, so
 RS villages get the same cage mobs / fishtank / chest behaviour as CTOV villages.
 
-See [`rs_di_compat/README.md`](rs_di_compat/README.md) for installation steps and the
-per-biome spawn profile mapping.
+**The jar build is intentionally isolated from RS.** The fork's CTOV jar does NOT
+include any RS-side NBT files or pool_additions JSONs — the jar can be built and used
+without any RS assets being present at build time. RS integration is delivered
+exclusively through this datapack, which CI builds into a separate
+`rs_di_compat-<version>.zip` artifact alongside the jar.
+
+The datapack ships with **starter petshop NBTs** (one per RS biome) copied from the
+fork's own CTOV petshop NBTs with biome-appropriate mapping. They work out of the box;
+replace them with custom designs any time (see the rs_di_compat README for the
+replacement workflow).
+
+**Note:** Repurposed Structures itself does NOT ship petshop NBTs. The command
+`/place template repurposed_structures:villages/<biome>/petshop` will return "no such
+template" — this is expected, not a bug. To spawn a petshop for inspection, use
+`/place template ctov:villages/<biome>/petshop` (this datapack's starter NBT) or
+`/place template ctov:village/<ctov_biome>/jobsite/petshop` (the fork's own petshop
+NBT from the jar).
+
+See [`rs_di_compat/README.md`](rs_di_compat/README.md) for installation steps, the
+per-biome spawn profile mapping, and the NBT replacement workflow.
 
 ### 5. Isolated test template pools for CommandStructures
 
@@ -195,13 +213,21 @@ CTOV) and this fork. The original CTOV license (BY-NC-ND-4.0) applies.
 3. (Recommended) Install [Domestication Innovation](https://www.curseforge.com/minecraft/mc-mods/domestication-innovation)
    1.7.0+ — Forge only.
 4. Drop this fork's CTOV jar (replaces upstream CTOV) into your `mods/` folder.
-5. (Optional, for RS support) Drop the `rs_di_compat/` folder as a datapack into your
-   world's `datapacks/` folder.
+   - Build it from source with `./gradlew build` (jar is in `<loader>/build/libs/`),
+     or download the `ctov-di-compat-<loader>` artifact from the latest CI run.
+5. (Optional, for RS support) Install [Repurposed Structures](https://www.curseforge.com/minecraft/mc-mods/repurposed-structures)
+   7.1+ (1.20.1 branch), then drop the `rs_di_compat-<version>.zip` datapack into
+   your world's `datapacks/` folder.
+   - Build it from source with `bash scripts/package_rs_di_compat.sh` (zip is in
+     `rs_di_compat/build/`), or download the `rs-di-compat-datapack` artifact from
+     the latest CI run.
 6. (Optional, for testing) Install CommandStructures and use
    `/spawnstructure ~ ~ ~ ctov:village/test/petshop/<biome> 0 false false false false`.
 
 No further configuration is needed. The fork auto-detects DI via Lithostitched's
-`mod_loaded` conditions.
+`mod_loaded` conditions. The RS datapack auto-detects RS via RS's own pool_additions
+loader (no `mod_loaded` check needed — if RS isn't installed, the pool additions
+simply never fire).
 
 ---
 
@@ -224,10 +250,34 @@ Gradle 8.7+ (the wrapper is included).
 The built jars will be in `<loader>/build/libs/`. Use the `-dev` jar if you want
 unobfuscated builds (for development); use the regular jar for production.
 
+### Building the RS × DI compat datapack zip
+
+The RS integration is intentionally NOT part of the jar build — it ships as a
+separate datapack zip. Build it with:
+
+```bash
+bash scripts/package_rs_di_compat.sh
+```
+
+This produces `rs_di_compat/build/rs_di_compat-<version>.zip`, ready to drop into a
+world's `datapacks/` folder. The zip is buildable with or without the petshop NBTs
+in place — without them, the datapack still parses but no petshop buildings generate
+in RS villages. With the committed starter NBTs (default), everything works out of
+the box.
+
+The jar build does not invoke this script — they are independent. You can build the
+jar without building the datapack, and vice versa.
+
 ### GitHub Actions
 
-The fork includes a `.github/workflows/Build.yml` workflow that builds all four loader
-jars on push and PR. The workflow uses JDK 17 and Gradle 8.7.
+The fork includes a `.github/workflows/Build.yml` workflow that:
+1. Builds all four loader jars.
+2. Packages the `rs_di_compat` datapack zip via `scripts/package_rs_di_compat.sh`.
+3. Uploads five artifacts: `ctov-di-compat-forge`, `ctov-di-compat-neoforge`,
+   `ctov-di-compat-fabric`, `rs-di-compat-datapack`, and `ctov-di-compat-all-jars`
+   (umbrella).
+
+The workflow uses JDK 17 and Gradle 8.7.
 
 ---
 
@@ -252,7 +302,15 @@ jars on push and PR. The workflow uses JDK 17 and Gradle 8.7.
 - **4 platform metadata files** (`mods.toml` × 2, `fabric.mod.json`, `quilt.mod.json`)
   updated to declare `domesticationinnovation` as a soft dependency.
 - **`rs_di_compat/`** — standalone datapack for Repurposed Structures × DI compat
-  (24 files: 11 pool additions, 11 spawn-count additions, README, `pack.mcmeta`).
+  (35 files: 11 pool additions, 11 spawn-count additions, 11 starter petshop NBTs,
+  README, `pack.mcmeta`). Packaged into `rs_di_compat-<version>.zip` by
+  `scripts/package_rs_di_compat.sh`; uploaded as the `rs-di-compat-datapack` CI
+  artifact. Kept strictly out of the jar build so the jar can be built without any
+  RS-side NBT files being present.
+- **`scripts/package_rs_di_compat.sh`** — packages `rs_di_compat/` into a standalone
+  datapack zip. Buildable with or without the petshop NBTs in place.
+- **`.github/workflows/Build.yml`** — updated to package and upload the
+  `rs_di_compat-<version>.zip` artifact alongside the loader jars.
 - **3 docs** at `docs/` (`DI_COMPAT_PETSHOP.md`, `internal_mapping.md`,
   `PR_DESCRIPTION.md`).
 

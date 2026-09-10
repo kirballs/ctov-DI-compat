@@ -1,19 +1,42 @@
 # Repurposed Structures — DI Petshop Compat Datapack
 
-This datapack adds Domestication Innovation petshop buildings to all 11 Repurposed Structures village variants, using the `ctov:petshop_compat` pool element from the CTOV-DI-compat fork.
+This datapack adds Domestication Innovation petshop buildings to all 11 Repurposed Structures village variants, using the `ctov:petshop_compat` pool element registered by the CTOV-DI-compat fork.
 
-## Status
+## What this datapack does
 
-**Pool entries and spawn profiles: done.** The JSON files are ready.
+For each of the 11 RS village biomes (`badlands`, `bamboo`, `birch`, `cherry`, `dark_forest`, `giant_taiga`, `jungle`, `mountains`, `mushroom`, `oak`, `swamp`), this datapack:
 
-**Petshop NBTs: TODO — you need to create these.**
+1. Injects one petshop entry into the RS village houses pool (`repurposed_structures:villages/<biome>/houses`).
+2. Caps the petshop to one per village via `rs_pieces_spawn_counts_additions`.
+3. Provides a starter petshop `.nbt` file at `data/ctov/structures/villages/<biome>/petshop.nbt`.
 
-Each village needs a petshop NBT file at:
-```
-data/ctov/structures/villages/<biome>/petshop.nbt
-```
+The injected pool entry uses `ctov:petshop_compat` as the element type, with a `biome_profile` field that selects the spawn table from the fork's `data/ctov/petshop_spawns/<profile>.json`. The chest loot table resolves automatically via DI when DI is loaded.
 
-where `<biome>` is one of: `badlands`, `bamboo`, `birch`, `cherry`, `dark_forest`, `giant_taiga`, `jungle`, `mountains`, `mushroom`, `oak`, `swamp`.
+## Important: RS does NOT ship petshop NBTs
+
+Repurposed Structures itself does **not** ship any petshop structure NBTs. The `/place template repurposed_structures:villages/<biome>/petshop ~ ~ ~` command will therefore return "no such template" — this is expected, not a bug. (Previous versions of this README incorrectly stated that RS ships petshop NBTs and could be used as a source via `/place template`. That was wrong: RS has animal pens, shepherds, etc., but no petshop building.)
+
+To make this datapack work out of the box, this fork ships **starter petshop NBTs** that are copied from the fork's own CTOV petshop NBTs (`data/ctov/structures/village/<ctov_biome>/jobsite/petshop.nbt`) with biome-appropriate mapping. They contain the DI data markers (`petshop_cage_0..3`, `petshop_water`, `petshop_chest`) so the `ctov:petshop_compat` element type will dispatch correctly.
+
+The mapping is:
+
+| RS village biome | Starter NBT source (CTOV) | Reason |
+|---|---|---|
+| `badlands`         | `ctov:village/mesa/jobsite/petshop`        | Mesa is the legacy name for badlands. |
+| `bamboo`           | `ctov:village/jungle/jobsite/petshop`      | Jungle is the closest thematic match for bamboo. |
+| `birch`            | `ctov:village/taiga/jobsite/petshop`       | Forested temperate biome. |
+| `cherry`           | `ctov:village/plains/jobsite/petshop`      | Blossom biome — plains is the closest neutral starter. |
+| `dark_forest`      | `ctov:village/taiga/jobsite/petshop`       | Forested temperate biome. |
+| `giant_taiga`      | `ctov:village/taiga/jobsite/petshop`       | Taiga is the closest match. |
+| `jungle`           | `ctov:village/jungle/jobsite/petshop`      | Direct match. |
+| `mountains`        | `ctov:village/mountain/jobsite/petshop`    | Direct match. |
+| `mushroom`         | `ctov:village/mushroom/jobsite/petshop`    | Direct match. |
+| `oak`              | `ctov:village/plains/jobsite/petshop`      | Oak is a generic temperate forest — plains is the closest neutral starter. |
+| `swamp`            | `ctov:village/swamp/jobsite/petshop`       | Direct match. |
+
+The starter NBTs are **placeholders**. They're CTOV-styled buildings dropped into RS villages — visually they may not perfectly match the RS village aesthetic (e.g. RS bamboo villages use bamboo wood, but the starter NBT is jungle-themed). To get a perfect look, replace each starter NBT with a custom one designed for the target RS biome (see *Replacing the starter NBTs* below).
+
+The spawn logic, cage counts, fishtank décor, and chest loot all work correctly with the starter NBTs because those are driven by the `biome_profile` field in the pool_additions JSONs and the `petshop_*` data markers inside the NBTs — not by the NBT's block palette.
 
 ## Two namespaces, on purpose
 
@@ -26,9 +49,36 @@ This datapack uses **two different namespaces** for two different things. Don't 
 
 When you save a structure block, the **Name** field is the resource ID Minecraft writes the file under. So `ctov:villages/bamboo/petshop` lands at `data/ctov/structures/villages/bamboo/petshop.nbt` — which matches the `location` field in `houses.json`. Using `repurposed_structures:` for the save name would write to the wrong folder and the building would never generate.
 
-## How to create the NBTs
+## Installation
 
-### The marker system (read this first)
+### Option A — Use the prebuilt zip from CI
+
+1. Download the `rs-di-compat-datapack` artifact from the latest GitHub Actions run on this fork.
+2. Unzip the artifact locally — you'll get `rs_di_compat-<version>.zip`.
+3. Drop `rs_di_compat-<version>.zip` into your world's `datapacks/` folder.
+4. In-game, run `/reload` (or restart the world).
+
+### Option B — Build the zip yourself
+
+```bash
+# From the repo root:
+bash scripts/package_rs_di_compat.sh
+```
+
+This produces `rs_di_compat/build/rs_di_compat-<mod_version>.zip`. Drop that zip into your world's `datapacks/` folder.
+
+### Option C — Use the folder directly (development only)
+
+For development, you can symlink or copy the `rs_di_compat/` folder itself into `datapacks/`. Minecraft accepts unzipped datapack folders. Rename it to `rs_di_compat` (no version suffix) for cleanliness.
+
+## Required companion mods
+
+- **CTOV-DI-compat fork jar** (Forge / NeoForge / Fabric / Quilt — same loader as your game). Registers the `ctov:petshop_compat` pool element type and the per-biome spawn profiles.
+- **Repurposed Structures** (1.20.1 branch, RS 7.1+). The pool_additions and rs_pieces_spawn_counts_additions JSONs are read by RS — without RS, this datapack is inert.
+- **Domestication Innovation** (Forge / NeoForge, 1.7+). Provides the `domesticationinnovation:chests/petshop_chest` loot table that the `petshop_chest` marker binds to. Without DI, petshops still generate but the chest stays empty.
+- **Lithostitched** (transitively, via CTOV).
+
+## The marker system (read this if you're replacing NBTs)
 
 Each `.nbt` file must contain **Data-mode structure blocks** with specific metadata names. The `ctov:petshop_compat` element type reads these markers at worldgen to know where to spawn pets, place water, and bind the chest loot table. Without them, the building generates empty.
 
@@ -55,81 +105,60 @@ At gen time, the marker block is always cleared to air (for cages/chest) or repl
 
 A minimal functional petshop is: **one `petshop_cage_1` on a cage floor + one `petshop_chest` directly above a chest block.**
 
+## Replacing the starter NBTs
+
+The committed starter NBTs are designed to make the datapack usable immediately. To replace one with a custom design:
+
 ### Step 1 — Start a creative world
 
 Create a new flat creative world with cheats enabled. You need:
 - **CTOV-DI-compat fork** installed (registers `ctov:petshop_compat`)
 - **Domestication Innovation** installed (provides the `chests/petshop_chest` loot table)
-- **Repurposed Structures** installed (provides the source petshop NBTs you'll adapt)
+- **Repurposed Structures** installed (so you can visit an RS village of the target biome for inspiration)
 
-You do **not** need the CommandStructures mod for this workflow — vanilla `/place template` is sufficient and faster for spawning single pre-baked buildings.
+You do **not** need the CommandStructures mod — vanilla `/place template` is enough.
 
-### Step 2 — Spawn an RS petshop as your starting point
+### Step 2 — Spawn a starter petshop as your starting point
 
-RS ships its own petshop NBTs for each village biome. Load one into the world with vanilla `/place template`:
+You have two good options for a starting NBT:
+
+**Option A: Spawn the existing starter NBT for this biome.** This is the fastest path — you start with a working petshop and just adapt its blocks to match the RS biome aesthetic.
 
 ```
-/place template repurposed_structures:villages/<biome>/petshop ~ ~ ~
+/place template ctov:villages/<biome>/petshop ~ ~ ~
 ```
 
 For example:
 ```
-/place template repurposed_structures:villages/bamboo/petshop ~ ~ ~
+/place template ctov:villages/bamboo/petshop ~ ~ ~
 ```
 
-This places one building at your position. No jigsaw resolution happens, so the cage jigsaws and any leftover structure blocks from RS's build process will be visible inside the building — that's expected, you'll clean them up in the next step.
+(Yes — `ctov:villages/<biome>/petshop` works once this datapack is installed, because the starter NBTs live at `data/ctov/structures/villages/<biome>/petshop.nbt` in this datapack.)
 
-### Step 3 — Clean up the old RS markers (IMPORTANT)
+**Option B: Spawn a CTOV petshop directly.** Useful if you want to start from a different CTOV biome's petshop than the one the starter NBT was based on.
 
-RS petshops use a stale, pre-baked pet system: each cage has a **jigsaw block** that targets a pool like `repurposed_structures:villages/pets_glass_cage`, which resolves at village-gen time to a sub-NBT with literal entities baked in (one dog, two cats, etc.). There may also be leftover RS structure blocks with metadata our element type doesn't recognise.
+```
+/place template ctov:village/<ctov_biome>/jobsite/petshop ~ ~ ~
+```
 
-**You must break ALL of these and replace them with our markers.** If you leave them, two things go wrong:
-- Leftover jigsaws resolve during village gen and re-introduce the stale NBTs alongside your marker-spawned pets — duplicate animals.
-- Leftover RS structure blocks hit the `default` case in `handleDataMarker` and just get cleared to air (no spawn, no crash, but wasted space).
+For example:
+```
+/place template ctov:village/jungle/jobsite/petshop ~ ~ ~
+```
 
-#### Per-cage cleanup
+Either way, the placed building will already have working DI markers — you're not starting from scratch.
 
-For each cage in the building:
+### Step 3 — Adapt the building blocks to the biome
 
-1. Find every block inside the cage volume that is a **jigsaw block** or a **structure block**.
-2. **Break all of them.**
-3. Place **one** new structure block on the cage floor, centered (where you want pets to stand — not on a wall, not floating, not below the floor).
-4. Open the structure block UI:
-   - **Mode:** Data
-   - **Custom Data Name (metadata):** `petshop_cage_1` (for cages that should hold 2–3 pets — your standard choice) or `petshop_cage_3` (for 1-block cages where only 1 pet fits)
-5. Repeat for every cage. Multiple cages can all use `petshop_cage_1` — the number is a spawn-count selector, not a unique ID.
+Swap the wood, planks, and terrain blocks to match the target RS biome's materials. For example, for `bamboo`, swap any jungle wood for bamboo wood, jungle planks for bamboo planks, etc.
 
-You do not need to use `petshop_cage_0` or `petshop_cage_2`. You do not need more than one structure block per cage.
+This is purely cosmetic — the markers don't care about the building's blocks.
 
-#### Fishtank cleanup (if the building has one)
+### Step 4 — (Optional) Add or remove cages
 
-RS petshops have a jigsaw block targeting `repurposed_structures:villages/pets_fish` for the fishtank. Same treatment:
+If you want more cages: place additional Data-mode structure blocks on cage floors with metadata `petshop_cage_1` (or `petshop_cage_0`/`petshop_cage_2`/`petshop_cage_3` for different spawn counts).
 
-1. Break that jigsaw block.
-2. Place one Data-mode structure block at the position where the water surface should be.
-3. Metadata: `petshop_water`
-
-The code will spawn 2 fishtank mobs there and replace the marker with water/seagrass/coral at gen time.
-
-#### Chest cleanup
-
-RS petshops may have a chest without any marker above it (RS uses its own loot system, not DI's). To get DI's `petshop_chest` loot table:
-
-1. Find the chest block.
-2. Place one Data-mode structure block **directly above** the chest (at `chest_pos + 1` on the Y axis).
-3. Metadata: `petshop_chest`
-
-The code clears the marker block (turns it to air) and binds the chest below to `domesticationinnovation:chests/petshop_chest`. Make sure there's nothing important above the chest, because that block will become air.
-
-If the chest already has a structure block above it (from RS or DI), break that one and place your own with `petshop_chest` metadata — don't trust the existing one.
-
-#### Jigsaw blocks outside cages
-
-The building might have a front-door jigsaw block (targeting the village's streets/houses pool to connect to the path). **Break that too.** Our `ctov:petshop_compat` element type places the NBT directly and doesn't process jigsaw blocks, so any jigsaw left in the NBT would just sit there as a visible jigsaw block in the generated village. CTOV fork's own petshop NBTs don't have any jigsaw blocks, so yours shouldn't either.
-
-### Step 4 — (Optional) Adapt the building blocks to the biome
-
-If you started from an RS petshop that doesn't perfectly match the target biome (e.g. you started from `repurposed_structures:villages/birch/petshop` but want to use it for `oak`), swap the wood, planks, and terrain blocks to match the target biome's materials. This is purely cosmetic — the markers don't care about the building's blocks.
+If you want fewer: break the structure blocks you don't want.
 
 ### Step 5 — Save the structure
 
@@ -157,7 +186,15 @@ rs_di_compat/data/ctov/structures/villages/<biome>/petshop.nbt
 
 The path mirrors the save name: `ctov:` → `data/ctov/`, `villages/<biome>/petshop` → `structures/villages/<biome>/petshop.nbt` (Minecraft adds the `structures/` prefix automatically when saving).
 
-### Step 7 — Verify
+### Step 7 — Rebuild the zip and reinstall
+
+```bash
+bash scripts/package_rs_di_compat.sh
+```
+
+Then drop the new `rs_di_compat-<version>.zip` into your world's `datapacks/` folder and run `/reload`.
+
+### Step 8 — Verify
 
 Quick structural check:
 1. The `.nbt` exists at the expected path.
@@ -166,16 +203,25 @@ Quick structural check:
 
 For full in-world verification, find an RS village of each biome and check that petshop buildings spawn with pets — but that's a final integration test, not a per-NBT check.
 
+You can also spot-check a single NBT in isolation with:
+```
+/place template ctov:villages/<biome>/petshop ~ ~ ~
+```
+
+This places one building at your position. No jigsaw resolution happens, so the cage markers and chest marker are visible as structure blocks (until `ctov:petshop_compat` processes them during real village gen — `/place template` uses vanilla `single_pool_element` behaviour, so it just places the NBT raw and leaves the markers as structure blocks). Walk inside, confirm the markers are at the right spots, then break them and re-save if needed.
+
 ## Common pitfalls
 
 - **Save name with `repurposed_structures:`** → file lands in the wrong namespace, the `houses.json` `location: ctov:...` won't find it, petshop never generates. Always use `ctov:`.
 - **Save name using `village/` (singular)** instead of `villages/` (plural) → file lands at `data/ctov/structures/village/<biome>/petshop.nbt` instead of `data/ctov/structures/villages/<biome>/petshop.nbt`, the `location` field won't find it. Always use `villages/` (plural) to match the `location` field in your JSONs.
 - **Forgetting to remove the load-mode structure block** you used to spawn the building (if you used `/place template` this isn't an issue — vanilla `/place template` doesn't leave a structure block behind — but if you loaded via a structure block in Load mode, break it before saving).
 - **Including entities ON** → any mobs wandering around the building (e.g. randomly spawned sheep) get baked into the NBT and will duplicate the marker-spawned ones. Always leave it OFF.
-- **Leaving RS jigsaw blocks in cages** → stale pre-baked pets spawn alongside your marker-spawned pets. Break them all.
 - **Structure block placed on a wall or ceiling** → pets spawn in the wrong spot (inside a wall, or falling from the ceiling). Always place cage markers on the cage floor.
+- **Trying `/place template repurposed_structures:villages/<biome>/petshop`** → returns "no such template". RS doesn't ship petshop NBTs. Use `ctov:villages/<biome>/petshop` (this datapack) or `ctov:village/<ctov_biome>/jobsite/petshop` (the fork's main jar) instead.
 
 ## Biome → Spawn Profile Mapping
+
+The `biome_profile` field in each `houses.json` selects which spawn profile the petshop uses. The spawn profiles themselves live in the fork's main jar at `data/ctov/petshop_spawns/<profile>.json`. Override them by dropping a JSON at `<datapack>/data/ctov/petshop_spawns/<profile>.json`.
 
 | Village Biome | Profile | Entities |
 |---|---|---|
@@ -193,8 +239,51 @@ For full in-world verification, find an RS village of each biome and check that 
 
 ## Adding modded mobs
 
-Edit the spawn profile JSON at `data/ctov/petshop_spawns/<profile>.json` in the CTOV fork. Add entries like:
+Edit the spawn profile JSON at `data/ctov/petshop_spawns/<profile>.json` in a separate datapack (or override the fork's defaults). Add entries like:
 ```json
 { "entity": "some_mod:cool_pet", "weight": 10, "baby": true, "age": -24000 }
 ```
 Unknown entity IDs are safely skipped at spawn time (no crash).
+
+## File layout
+
+```
+rs_di_compat/
+├── README.md                                            ← this file
+├── pack.mcmeta                                          ← datapack manifest
+├── data/
+│   ├── ctov/
+│   │   └── structures/
+│   │       └── villages/
+│   │           ├── badlands/petshop.nbt                 ← starter NBT (CTOV mesa design)
+│   │           ├── bamboo/petshop.nbt                   ← starter NBT (CTOV jungle design)
+│   │           ├── birch/petshop.nbt                    ← starter NBT (CTOV taiga design)
+│   │           ├── cherry/petshop.nbt                   ← starter NBT (CTOV plains design)
+│   │           ├── dark_forest/petshop.nbt              ← starter NBT (CTOV taiga design)
+│   │           ├── giant_taiga/petshop.nbt              ← starter NBT (CTOV taiga design)
+│   │           ├── jungle/petshop.nbt                   ← starter NBT (CTOV jungle design)
+│   │           ├── mountains/petshop.nbt                ← starter NBT (CTOV mountain design)
+│   │           ├── mushroom/petshop.nbt                 ← starter NBT (CTOV mushroom design)
+│   │           ├── oak/petshop.nbt                      ← starter NBT (CTOV plains design)
+│   │           └── swamp/petshop.nbt                    ← starter NBT (CTOV swamp design)
+│   └── repurposed_structures/
+│       ├── pool_additions/
+│       │   └── villages/
+│       │       ├── <biome>/houses.json                  ← injects petshop into RS houses pool
+│       │       └── ... (11 biomes)
+│       └── rs_pieces_spawn_counts_additions/
+│           ├── village_<biome>.json                     ← caps petshop at 1 per village
+│           └── ... (11 biomes)
+└── build/                                                ← produced by scripts/package_rs_di_compat.sh
+    └── rs_di_compat-<version>.zip                       ← drop into world's datapacks/
+```
+
+## Why this is a separate datapack (and not part of the jar)
+
+The fork's main CTOV jar is intentionally kept free of any RS-specific assets. RS integration is delivered exclusively through this datapack for three reasons:
+
+1. **Build isolation.** The jar can be built and used without any RS-side NBT files being present at build time. The CI workflow builds the jar and the datapack zip as independent artifacts.
+2. **Loader neutrality.** The datapack is pure JSON + NBT — it works on Forge, NeoForge, Fabric, and Quilt without per-loader variants.
+3. **Iterability.** You can swap petshop NBTs in your world's `datapacks/` folder without rebuilding or replacing the CTOV jar. Drop in a new `rs_di_compat-<version>.zip`, run `/reload`, and the next village gen uses your new NBTs.
+
+The fork's main jar provides the **engine** (`ctov:petshop_compat` element type + spawn profiles). This datapack provides the **RS-side wiring** (pool additions + NBTs). They're orthogonal — you can use the fork's jar without this datapack (CTOV villages still get petshops), and you can use this datapack without DI installed (petshops generate but chest stays empty).
