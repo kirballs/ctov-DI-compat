@@ -307,10 +307,23 @@ The workflow uses JDK 17 and Gradle 8.7.
   `scripts/package_rs_di_compat.sh`; uploaded as the `rs-di-compat-datapack` CI
   artifact. Kept strictly out of the jar build so the jar can be built without any
   RS-side NBT files being present.
+- **`rs_di_test_pools/`** — tiny standalone datapack that provides 11 single-petshop
+  template pools for [CommandStructures](https://www.curseforge.com/minecraft/mc-mods/commandstructures)'
+  `/spawnstructure` command. Lets you spawn individual petshops from the **original**
+  RS-DI datapack (TelepathicGrunt's) for quick inspection — fully resolves the
+  cage/fishtank jigsaws so you get a furnished building with pets inside. Does NOT
+  require this fork's jar — works with just RS + DI + the original RS-DI datapack +
+  CommandStructures. See [`rs_di_test_pools/README.md`](rs_di_test_pools/README.md)
+  for usage.
 - **`scripts/package_rs_di_compat.sh`** — packages `rs_di_compat/` into a standalone
   datapack zip. Buildable with or without the petshop NBTs in place.
+- **`scripts/package_rs_di_test_pools.sh`** — packages `rs_di_test_pools/` into a
+  standalone datapack zip.
+- **`scripts/generate_rs_di_test_pools.sh`** — regenerates the 11 test pool JSONs
+  from a hardcoded biome list. Idempotent — safe to re-run.
 - **`.github/workflows/Build.yml`** — updated to package and upload the
-  `rs_di_compat-<version>.zip` artifact alongside the loader jars.
+  `rs_di_compat-<version>.zip` and `rs_di_test_pools-<version>.zip` artifacts
+  alongside the loader jars.
 - **3 docs** at `docs/` (`DI_COMPAT_PETSHOP.md`, `internal_mapping.md`,
   `PR_DESCRIPTION.md`).
 

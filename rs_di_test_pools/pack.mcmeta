@@ -1,0 +1,6 @@
+{
+  "pack": {
+    "pack_format": 15,
+    "description": "CommandStructures test pools for the ORIGINAL Repurposed Structures - Domestication Innovation datapack. Provides single-petshop template pools so /spawnstructure can resolve cage jigsaws. Does NOT require CTOV-DI-compat fork."
+  }
+}

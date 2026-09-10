@@ -36,6 +36,13 @@ jobs:
     - name: Package rs_di_compat datapack zip
       run: bash scripts/package_rs_di_compat.sh
 
+    # The test_pools datapack provides 11 single-petshop template pools for
+    # CommandStructures' /spawnstructure command, so users can spawn individual
+    # petshops from the ORIGINAL RS-DI datapack for quick inspection. Standalone
+    # — does NOT require the CTOV-DI-compat fork jar.
+    - name: Package rs_di_test_pools datapack zip
+      run: bash scripts/package_rs_di_test_pools.sh
+
     - name: Upload Forge jar
       uses: actions/upload-artifact@v4
       with:
@@ -64,11 +71,19 @@ jobs:
         path: rs_di_compat/build/*.zip
         if-no-files-found: error
 
-    - name: Upload all jars + datapack
+    - name: Upload RS × DI test pools datapack zip
+      uses: actions/upload-artifact@v4
+      with:
+        name: rs-di-test-pools-datapack
+        path: rs_di_test_pools/build/*.zip
+        if-no-files-found: error
+
+    - name: Upload all jars + datapacks
       uses: actions/upload-artifact@v4
       with:
         name: ctov-di-compat-all-jars
         path: |
           */build/libs/*.jar
           rs_di_compat/build/*.zip
+          rs_di_test_pools/build/*.zip
         if-no-files-found: warn
