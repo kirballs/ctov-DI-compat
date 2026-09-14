@@ -24,8 +24,11 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x gradlew
 
-    - name: Build CTOV jar with Gradle
-      run: ./gradlew build --stacktrace
+    # Only build the Forge jar — NeoForge / Fabric / Quilt are not needed
+    # for this user's modpack (Forge 1.20.1 + DI). Skipping the other three
+    # loaders cuts build time roughly in half.
+    - name: Build Forge jar with Gradle
+      run: ./gradlew :forge:build --stacktrace
       env:
         GRADLE_OPTS: "-Xmx4G -Dorg.gradle.daemon=false"
 
@@ -36,33 +39,27 @@ jobs:
     - name: Package rs_di_compat datapack zip
       run: bash scripts/package_rs_di_compat.sh
 
-    # The test_pools datapack provides 11 single-petshop template pools for
-    # CommandStructures' /spawnstructure command, so users can spawn individual
-    # petshops from the ORIGINAL RS-DI datapack for quick inspection. Standalone
-    # — does NOT require the CTOV-DI-compat fork jar.
-    - name: Package rs_di_test_pools datapack zip
-      run: bash scripts/package_rs_di_test_pools.sh
+    # Gradle produces multiple Forge jars: the production obfuscated jar
+    # (no classifier suffix), a -dev jar (unobfuscated), a -sources jar,
+    # and a -dev-shadow jar (pre-remap). We only want to upload the
+    # production jar — stage it in a clean directory so the upload-artifact
+    # glob doesn't pick up the others.
+    - name: Stage production Forge jar
+      run: |
+        mkdir -p build-staging
+        cp forge/build/libs/[forge]ctov-*.jar build-staging/
+        # Remove the dev / sources / dev-shadow jars — only keep the bare
+        # versioned production jar.
+        rm -f build-staging/*-dev.jar build-staging/*-sources.jar build-staging/*-dev-shadow.jar
+        echo "Staged Forge jar:"
+        ls -la build-staging/
 
     - name: Upload Forge jar
       uses: actions/upload-artifact@v4
       with:
         name: ctov-di-compat-forge
-        path: forge/build/libs/*forge*.jar
-        if-no-files-found: warn
-
-    - name: Upload NeoForge jar
-      uses: actions/upload-artifact@v4
-      with:
-        name: ctov-di-compat-neoforge
-        path: neoforge/build/libs/*neoforge*.jar
-        if-no-files-found: warn
-
-    - name: Upload Fabric jar
-      uses: actions/upload-artifact@v4
-      with:
-        name: ctov-di-compat-fabric
-        path: fabric/build/libs/*fabric*.jar
-        if-no-files-found: warn
+        path: build-staging/*.jar
+        if-no-files-found: error
 
     - name: Upload RS × DI compat datapack zip
       uses: actions/upload-artifact@v4
@@ -70,20 +67,3 @@ jobs:
         name: rs-di-compat-datapack
         path: rs_di_compat/build/*.zip
         if-no-files-found: error
-
-    - name: Upload RS × DI test pools datapack zip
-      uses: actions/upload-artifact@v4
-      with:
-        name: rs-di-test-pools-datapack
-        path: rs_di_test_pools/build/*.zip
-        if-no-files-found: error
-
-    - name: Upload all jars + datapacks
-      uses: actions/upload-artifact@v4
-      with:
-        name: ctov-di-compat-all-jars
-        path: |
-          */build/libs/*.jar
-          rs_di_compat/build/*.zip
-          rs_di_test_pools/build/*.zip
-        if-no-files-found: warn
