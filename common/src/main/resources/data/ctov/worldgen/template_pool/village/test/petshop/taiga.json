@@ -1,6 +1,6 @@
 {
     "name": "ctov:village/test/petshop/taiga",
-    "fallback": "minecraft:village/common/empty",
+    "fallback": "minecraft:empty",
     "elements": [
         {
             "weight": 1,
