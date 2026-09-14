@@ -14,37 +14,49 @@ import java.util.Optional;
 /**
  * Data-only definition of a petshop spawn profile.
  *
- * <p>A profile is a weighted list of entity entries. Each entry maps a vanilla
- * or modded {@link EntityType} (resolved by id) to a spawn weight, an optional
- * {@code baby} flag, and an optional {@code age} value. The semantics of
- * {@code age} mirror {@link net.minecraft.world.entity.AgeableMob#setAge(int)}:
- * negative values are babies, more-negative values extend the baby phase, and
- * {@link Integer#MIN_VALUE} approximates a permanent baby.</p>
+ * <p>A profile is a weighted list of entity entries. Each entry maps a
+ * vanilla or modded {@link EntityType} (resolved by id) to a spawn weight
+ * and an {@code is_baby} flag. When {@code is_baby} is {@code true} (the
+ * default), the spawned mob gets {@link net.minecraft.world.entity.AgeableMob#setAge
+ * setAge(-24000)} — the same age value vanilla applies to a baby mob bred
+ * through the breeding system. That age value is what the user's external
+ * growth-rate tuning mod reads to set per-species growth times.</p>
  *
- * <p><b>Footgun warning:</b> {@code baby:true} combined with {@code age:0}
- * produces an adult mob that <em>looks</em> like it was supposed to be a baby.
- * Either omit {@code age} (defaults to {@code -24000}, the vanilla baby age)
- * or set it to a clearly negative value when {@code baby} is true.</p>
+ * <p>Set {@code is_baby: false} on a per-entry basis to spawn an adult
+ * instead (e.g. for non-tameable mobs like {@code minecraft:parrot}
+ * where spawning as a baby doesn't make sense, or for any case where
+ * you want the adult variant).</p>
  *
  * <p>Loaded on-demand from {@code data/<namespace>/petshop_spawns/<path>.json}
- * by {@link PetshopCompatStructurePoolElement#loadProfile}.</p>
+ * by {@link PetshopCompatStructurePoolElement#loadProfile}. Datapacks at the
+ * same path override the jar's built-in profiles — drop a JSON file at
+ * {@code data/ctov/petshop_spawns/<profile>.json} in any active datapack
+ * (e.g. the {@code rs_di_compat} datapack) to override the jar's version
+ * without rebuilding the mod.</p>
  */
 public record PetshopSpawnProfile(List<Entry> entries) {
 
     /**
      * Codec for a single spawn entry.
      *
-     * <p>{@code entity} is a required entity-type id. {@code weight} defaults
-     * to 1 when omitted. {@code baby} defaults to false. {@code age} defaults
-     * to {@code -24000} when {@code baby} is true and to {@code 0} otherwise;
-     * providing an explicit {@code age} always wins.</p>
+     * <p>{@code entity} is a required entity-type id. {@code weight}
+     * defaults to {@code 1} when omitted. {@code is_baby} defaults to
+     * {@code true} — entries that should spawn as adults must explicitly
+     * set {@code "is_baby": false}.</p>
+     *
+     * <p>The "baby" age is hardcoded to {@code -24000} ticks, the vanilla
+     * breeding baby age. If a future use case requires overriding this
+     * per-entry, add an {@code age} field — but for now we intentionally
+     * don't expose it, because the user's external growth-rate tuning
+     * mod reads {@code -24000} as "this was bred, apply the species
+     * default growth time". Exposing {@code age} here would break that
+     * contract.</p>
      */
-    public record Entry(ResourceLocation entity, int weight, boolean baby, int age) {
+    public record Entry(ResourceLocation entity, int weight, boolean isBaby) {
         public static final Codec<Entry> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ResourceLocation.CODEC.fieldOf("entity").forGetter(Entry::entity),
                 Codec.intRange(1, 100).optionalFieldOf("weight", 1).forGetter(Entry::weight),
-                Codec.BOOL.optionalFieldOf("baby", false).forGetter(Entry::baby),
-                Codec.INT.optionalFieldOf("age", -24000).forGetter(Entry::age)
+                Codec.BOOL.optionalFieldOf("is_baby", true).forGetter(Entry::isBaby)
         ).apply(instance, Entry::new));
     }
 
@@ -85,8 +97,12 @@ public record PetshopSpawnProfile(List<Entry> entries) {
      * Resolve the desired age for a chosen entry. Used by
      * {@link PetshopCompatStructurePoolElement} after {@link Mob#finalizeSpawn}
      * to avoid being overwritten.
+     *
+     * <p>Returns {@code -24000} for baby entries (the vanilla breeding baby
+     * age — what an external growth-rate tuning mod reads to identify
+     * "bred" mobs). Returns {@code 0} for adult entries.</p>
      */
     public int ageFor(Entry entry) {
-        return entry.baby() ? (entry.age() < 0 ? entry.age() : -24000) : entry.age();
+        return entry.isBaby() ? -24000 : 0;
     }
 }
