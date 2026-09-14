@@ -44,14 +44,31 @@ jobs:
     # and a -dev-shadow jar (pre-remap). We only want to upload the
     # production jar — stage it in a clean directory so the upload-artifact
     # glob doesn't pick up the others.
+    #
+    # NOTE on the glob: the jar filename contains literal square brackets
+    # (e.g. `[forge]ctov-3.4.14.jar`), which bash interprets as a character
+    # class match. Use `find` with a `-name` pattern that doesn't include
+    # the brackets to avoid the bash glob pitfall.
     - name: Stage production Forge jar
       run: |
+        echo "All jars produced by Gradle:"
+        ls -la forge/build/libs/
+        echo ""
         mkdir -p build-staging
-        cp forge/build/libs/[forge]ctov-*.jar build-staging/
-        # Remove the dev / sources / dev-shadow jars — only keep the bare
-        # versioned production jar.
-        rm -f build-staging/*-dev.jar build-staging/*-sources.jar build-staging/*-dev-shadow.jar
-        echo "Staged Forge jar:"
+        # Find every .jar Gradle produced, copy them all to staging, then
+        # delete the non-production variants by their classifier suffix.
+        find forge/build/libs -maxdepth 1 -name '*.jar' -exec cp {} build-staging/ \;
+        echo "Staged jars (before cleanup):"
+        ls -la build-staging/
+        # Remove dev / sources / dev-shadow jars — keep only the bare
+        # versioned production jar (no `-suffix` before `.jar`).
+        rm -f build-staging/*-dev.jar
+        rm -f build-staging/*-sources.jar
+        rm -f build-staging/*-dev-shadow.jar
+        # Also remove any remapped-sources variant if present.
+        rm -f build-staging/*-remappedSources.jar
+        rm -f build-staging/*-sources-remapped.jar
+        echo "Staged production Forge jar (after cleanup):"
         ls -la build-staging/
 
     - name: Upload Forge jar
